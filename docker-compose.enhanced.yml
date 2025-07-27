@@ -1,0 +1,406 @@
+version: '3.8'
+
+services:
+  # Enhanced AI Backend with GPU Support
+  ai-backend:
+    build:
+      context: ./ai_backend
+      dockerfile: Dockerfile.enhanced
+    container_name: ai-telemedicine-ai-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=redis://redis:6379
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - HIPAA_COMPLIANCE_MODE=true
+      - AUDIT_LOGGING_ENABLED=true
+      - VOICE_ANALYSIS_ENABLED=true
+      - PREDICTIVE_ANALYTICS_ENABLED=true
+    volumes:
+      - ai_models:/app/models
+      - ai_cache:/app/cache
+      - voice_recordings:/app/voice_recordings
+    depends_on:
+      - redis
+      - mysql
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+  # Enhanced Java Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.enhanced
+    container_name: ai-telemedicine-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=production
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - HIPAA_COMPLIANCE_MODE=true
+      - AUDIT_LOGGING_ENABLED=true
+      - ENCRYPTION_ENABLED=true
+    volumes:
+      - audit_logs:/app/logs
+      - compliance_reports:/app/reports
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+  # Enhanced Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.enhanced
+    container_name: ai-telemedicine-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080
+      - REACT_APP_AI_API_URL=http://localhost:8000
+      - REACT_APP_ENABLE_VOICE_ANALYSIS=true
+      - REACT_APP_ENABLE_PREDICTIVE_ANALYTICS=true
+      - REACT_APP_ENABLE_SECURITY_DASHBOARD=true
+    volumes:
+      - frontend_build:/app/build
+    depends_on:
+      - backend
+      - ai-backend
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+  # Enhanced Database with Security
+  mysql:
+    image: mysql:8.0
+    container_name: ai-telemedicine-mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=ai_telemedicine
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/migrations:/docker-entrypoint-initdb.d
+      - mysql_logs:/var/log/mysql
+    command: --default-authentication-plugin=mysql_native_password --sql-mode=STRICT_TRANS_TABLES
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+  # Redis for Caching and Sessions
+  redis:
+    image: redis:7-alpine
+    container_name: ai-telemedicine-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - redis_logs:/var/log/redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+  # Elasticsearch for Logging and Analytics
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    container_name: ai-telemedicine-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+  # Kibana for Log Visualization
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.0
+    container_name: ai-telemedicine-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+  # Logstash for Log Processing
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.8.0
+    container_name: ai-telemedicine-logstash
+    volumes:
+      - ./logs:/var/log/ai-telemedicine
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+    ports:
+      - "5044:5044"
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    networks:
+      - ai-network
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+  # Prometheus for Metrics Collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ai-telemedicine-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+  # Grafana for Metrics Visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ai-telemedicine-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy with Security
+  nginx:
+    image: nginx:alpine
+    container_name: ai-telemedicine-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - frontend
+      - backend
+      - ai-backend
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+  # Security Monitoring with Wazuh
+  wazuh-manager:
+    image: wazuh/wazuh-manager:4.5.0
+    container_name: ai-telemedicine-wazuh-manager
+    ports:
+      - "1514:1514"
+      - "1515:1515"
+      - "514:514/udp"
+      - "514:514/tcp"
+      - "55000:55000"
+    volumes:
+      - wazuh_api_configuration:/var/ossec/api/configuration
+      - wazuh_etc:/var/ossec/etc
+      - wazuh_logs:/var/ossec/logs
+      - wazuh_stats:/var/ossec/stats
+      - wazuh_var_multigroups:/var/ossec/var/multigroups
+      - wazuh_integrations:/var/ossec/integrations
+      - wazuh_active_response:/var/ossec/active-response/bin
+      - filebeat_etc:/etc/filebeat
+      - filebeat_var:/var/lib/filebeat
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+  # Wazuh Indexer
+  wazuh-indexer:
+    image: wazuh/wazuh-indexer:4.5.0
+    container_name: ai-telemedicine-wazuh-indexer
+    ports:
+      - "9200:9200"
+    environment:
+      - node.name=wazuh-indexer
+      - cluster.initial_master_nodes=wazuh-indexer
+      - cluster.name=wazuh-cluster
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - wazuh-indexer-data:/var/lib/wazuh-indexer
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+  # Wazuh Dashboard
+  wazuh-dashboard:
+    image: wazuh/wazuh-dashboard:4.5.0
+    container_name: ai-telemedicine-wazuh-dashboard
+    ports:
+      - "443:5601"
+    environment:
+      - INDEXER_USERNAME=admin
+      - INDEXER_PASSWORD=SecretPassword
+      - WAZUH_API_URL=https://wazuh-manager
+    volumes:
+      - wazuh-dashboard-config:/var/lib/wazuh-dashboard
+    depends_on:
+      - wazuh-indexer
+      - wazuh-manager
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+  # Backup Service
+  backup:
+    image: alpine:latest
+    container_name: ai-telemedicine-backup
+    volumes:
+      - mysql_data:/backup/mysql
+      - redis_data:/backup/redis
+      - audit_logs:/backup/logs
+      - compliance_reports:/backup/reports
+      - ./backups:/backup/local
+    environment:
+      - BACKUP_SCHEDULE=0 2 * * *
+      - BACKUP_RETENTION_DAYS=30
+    command: |
+      sh -c "
+        apk add --no-cache mysql-client
+        while true; do
+          sleep 86400
+          echo 'Starting backup...'
+          mysqldump -h mysql -u root -p$$MYSQL_ROOT_PASSWORD ai_telemedicine > /backup/local/backup_$$(date +%Y%m%d_%H%M%S).sql
+          echo 'Backup completed'
+        done
+      "
+    depends_on:
+      - mysql
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+  # Health Check Service
+  healthcheck:
+    image: curlimages/curl:latest
+    container_name: ai-telemedicine-healthcheck
+    command: |
+      sh -c "
+        while true; do
+          echo 'Checking services...'
+          curl -f http://frontend:3000 || echo 'Frontend down'
+          curl -f http://backend:8080/health || echo 'Backend down'
+          curl -f http://ai-backend:8000/health || echo 'AI Backend down'
+          sleep 60
+        done
+      "
+    depends_on:
+      - frontend
+      - backend
+      - ai-backend
+    networks:
+      - ai-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  ai_models:
+    driver: local
+  ai_cache:
+    driver: local
+  voice_recordings:
+    driver: local
+  audit_logs:
+    driver: local
+  compliance_reports:
+    driver: local
+  frontend_build:
+    driver: local
+  mysql_logs:
+    driver: local
+  redis_logs:
+    driver: local
+  nginx_logs:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  wazuh_api_configuration:
+    driver: local
+  wazuh_etc:
+    driver: local
+  wazuh_logs:
+    driver: local
+  wazuh_stats:
+    driver: local
+  wazuh_var_multigroups:
+    driver: local
+  wazuh_integrations:
+    driver: local
+  wazuh_active_response:
+    driver: local
+  filebeat_etc:
+    driver: local
+  filebeat_var:
+    driver: local
+  wazuh-indexer-data:
+    driver: local
+  wazuh-dashboard-config:
+    driver: local
+
+networks:
+  ai-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16 

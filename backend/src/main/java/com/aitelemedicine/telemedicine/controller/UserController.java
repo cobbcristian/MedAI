@@ -1,0 +1,1 @@
+// UserController with secured endpoints

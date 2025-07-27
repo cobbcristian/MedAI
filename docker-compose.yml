@@ -1,0 +1,135 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: telemedicine-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: telemedicine
+      MYSQL_USER: telemedicine_user
+      MYSQL_PASSWORD: telemedicine_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/src/main/resources/db/migration:/docker-entrypoint-initdb.d
+    networks:
+      - telemedicine-network
+
+  # Spring Boot Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: telemedicine-backend
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/telemedicine?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: telemedicine_user
+      SPRING_DATASOURCE_PASSWORD: telemedicine_password
+      APP_JWT_SECRET: your-super-secret-jwt-key-that-is-at-least-256-bits-long
+      APP_OPENAI_API_KEY: ${OPENAI_API_KEY}
+      APP_STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      APP_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+      SPRING_MAIL_HOST: smtp.gmail.com
+      SPRING_MAIL_PORT: 587
+      SPRING_MAIL_USERNAME: ${EMAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${EMAIL_PASSWORD}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+    networks:
+      - telemedicine-network
+    volumes:
+      - ./uploads:/app/uploads
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: telemedicine-frontend
+    restart: unless-stopped
+    environment:
+      REACT_APP_API_URL: http://localhost:8080
+      REACT_APP_STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - telemedicine-network
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: telemedicine-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - telemedicine-network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: telemedicine-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - telemedicine-network
+
+  # Monitoring with Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: telemedicine-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - telemedicine-network
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: telemedicine-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - telemedicine-network
+
+volumes:
+  mysql_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  telemedicine-network:
+    driver: bridge 
