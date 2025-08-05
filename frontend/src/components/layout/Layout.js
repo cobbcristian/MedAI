@@ -31,7 +31,7 @@ import {
   Security,
   Analytics,
   Science,
-  Crisis,
+  Warning,
   Notifications,
   AccountCircle,
   Settings,
@@ -59,7 +59,7 @@ const menuItems = [
   { text: 'Security & Privacy', icon: <Security />, path: '/security-privacy' },
   { text: 'Advanced AI', icon: <Science />, path: '/advanced-ai' },
   { text: 'Analytics', icon: <Analytics />, path: '/analytics' },
-  { text: 'Crisis Dashboard', icon: <Crisis />, path: '/crisis-dashboard' }
+  { text: 'Crisis Dashboard', icon: <Warning />, path: '/crisis-dashboard' }
 ];
 
 const Layout = ({ children }) => {

@@ -26,7 +26,7 @@ import {
   Analytics,
   Security,
   Science,
-  Crisis,
+  Warning,
   TrendingUp,
   HealthAndSafety,
   MonitorHeart,
@@ -36,7 +36,6 @@ import {
   Timeline,
   Notifications,
   CheckCircle,
-  Warning,
   Info
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';

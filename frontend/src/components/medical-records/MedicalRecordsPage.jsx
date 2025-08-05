@@ -392,14 +392,14 @@ const MedicalRecordsPage = () => {
           >
             Comprehensive Analysis
           </Button>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={handleUpload}
-            sx={{ borderRadius: 2 }}
-          >
-            Upload Record
-          </Button>
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          onClick={handleUpload}
+          sx={{ borderRadius: 2 }}
+        >
+          Upload Record
+        </Button>
         </Box>
       </Box>
 
@@ -707,30 +707,30 @@ const MedicalRecordsPage = () => {
       <Dialog open={shareDialog} onClose={() => setShareDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Share Medical Record</DialogTitle>
         <DialogContent>
-          <Typography variant="body2" color="text.secondary" gutterBottom>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
             Share "{selectedRecord?.title}" with:
-          </Typography>
-          <TextField
-            fullWidth
+              </Typography>
+              <TextField
+                fullWidth
             label="Recipient Email"
-            placeholder="doctor@hospital.com"
-            sx={{ mb: 2 }}
-          />
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Access Level</InputLabel>
-            <Select label="Access Level" defaultValue="read-only">
-              <MenuItem value="read-only">Read Only</MenuItem>
-              <MenuItem value="temporary">Temporary Access</MenuItem>
-              <MenuItem value="full">Full Access</MenuItem>
-            </Select>
-          </FormControl>
-          <TextField
-            fullWidth
+                placeholder="doctor@hospital.com"
+                sx={{ mb: 2 }}
+              />
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Access Level</InputLabel>
+                <Select label="Access Level" defaultValue="read-only">
+                  <MenuItem value="read-only">Read Only</MenuItem>
+                  <MenuItem value="temporary">Temporary Access</MenuItem>
+                  <MenuItem value="full">Full Access</MenuItem>
+                </Select>
+              </FormControl>
+              <TextField
+                fullWidth
             label="Expiration Date"
-            type="date"
+                type="date"
             defaultValue="2024-02-15"
-            sx={{ mb: 2 }}
-          />
+                sx={{ mb: 2 }}
+              />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShareDialog(false)}>Cancel</Button>
