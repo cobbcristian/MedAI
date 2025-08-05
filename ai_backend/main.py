@@ -44,9 +44,9 @@ from models.response_models import (
 )
 
 app = FastAPI(
-    title="AI Telemedicine Analysis API",
-    description="AI-powered medical scan analysis, bloodwork parsing, and recovery prediction",
-    version="1.0.0"
+    title="MedAI Healthcare Platform API",
+    description="MedAI - AI-powered medical scan analysis, bloodwork parsing, recovery prediction, and comprehensive healthcare services",
+    version="2.0.0"
 )
 
 # CORS middleware for React frontend
@@ -81,7 +81,7 @@ os.makedirs("uploads", exist_ok=True)
 
 @app.get("/")
 async def root():
-    return {"message": "AI Telemedicine Analysis API", "status": "running"}
+    return {"message": "MedAI Healthcare Platform API", "status": "running", "version": "2.0.0"}
 
 @app.get("/health")
 async def health_check():

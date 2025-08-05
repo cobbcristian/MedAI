@@ -1,122 +1,134 @@
 import React, { useState } from 'react';
 import {
   AppBar,
-  Box,
-  CssBaseline,
-  Drawer,
-  IconButton,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
   Toolbar,
   Typography,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  IconButton,
+  Box,
+  Container,
   Avatar,
   Menu,
   MenuItem,
-  Divider,
   Badge,
+  Chip,
   useTheme,
-  useMediaQuery,
+  useMediaQuery
 } from '@mui/material';
 import {
   Menu as MenuIcon,
   Dashboard,
-  CalendarToday,
+  Person,
+  Description,
+  LocalHospital,
   VideoCall,
   Chat,
-  LocalHospital,
-  Person,
-  Settings,
-  Logout,
+  People,
+  Security,
+  Analytics,
+  Science,
+  Crisis,
   Notifications,
   AccountCircle,
+  Settings,
+  Logout,
   HealthAndSafety,
-  Description,
-  AdminPanelSettings,
-  People,
-  Analytics,
-  Psychology,
-  Security,
-  Warning,
-  LocalHospital as LogoIcon,
+  MonitorHeart,
+  Medication,
+  Vaccines,
+  Image,
+  Timeline
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const drawerWidth = 240;
+const drawerWidth = 280;
 
-// Logo component
-const Logo = () => (
-  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-    <LogoIcon sx={{ color: 'white', fontSize: 28 }} />
-    <Typography variant="h6" sx={{ fontWeight: 700, color: 'white' }}>
-      MedAI
-    </Typography>
-  </Box>
-);
+const menuItems = [
+  { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
+  { text: 'Patient Dashboard', icon: <Person />, path: '/patient-dashboard' },
+  { text: 'Medical Records', icon: <Description />, path: '/medical-records' },
+  { text: 'Symptom Checker', icon: <LocalHospital />, path: '/symptom-checker' },
+  { text: 'Appointments', icon: <Timeline />, path: '/appointments' },
+  { text: 'Video Calls', icon: <VideoCall />, path: '/video-calls' },
+  { text: 'Chat', icon: <Chat />, path: '/chat' },
+  { text: 'Patient Management', icon: <People />, path: '/patient-management' },
+  { text: 'Security & Privacy', icon: <Security />, path: '/security-privacy' },
+  { text: 'Advanced AI', icon: <Science />, path: '/advanced-ai' },
+  { text: 'Analytics', icon: <Analytics />, path: '/analytics' },
+  { text: 'Crisis Dashboard', icon: <Crisis />, path: '/crisis-dashboard' }
+];
 
 const Layout = ({ children }) => {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  const handleProfileMenuOpen = (event) => {
+  const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleProfileMenuClose = () => {
+  const handleMenuClose = () => {
     setAnchorEl(null);
   };
 
   const handleLogout = () => {
-    handleProfileMenuClose();
+    // Handle logout logic
+    handleMenuClose();
     navigate('/');
   };
 
-  const navigationItems = [
-    { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
-    { text: 'Appointments', icon: <CalendarToday />, path: '/appointments' },
-    { text: 'Video Calls', icon: <VideoCall />, path: '/video-calls' },
-    { text: 'Chat', icon: <Chat />, path: '/chat' },
-    { text: 'Symptom Checker', icon: <HealthAndSafety />, path: '/symptom-checker' },
-    { text: 'Medical Records', icon: <Description />, path: '/medical-records' },
-    { text: 'Advanced AI', icon: <Psychology />, path: '/advanced-ai' },
-    { text: 'Patients', icon: <People />, path: '/patients' },
-    { text: 'Analytics', icon: <Analytics />, path: '/analytics' },
-    { text: 'Security', icon: <Security />, path: '/security' },
-    { text: 'Crisis Dashboard', icon: <Warning />, path: '/crisis-dashboard' },
-  ];
-
   const drawer = (
-    <Box>
-      <Toolbar sx={{ backgroundColor: 'primary.main', color: 'white' }}>
-        <Logo />
-      </Toolbar>
-      <Divider />
+    <Box sx={{ p: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+        <HealthAndSafety sx={{ mr: 2, color: 'primary.main', fontSize: 32 }} />
+        <Typography variant="h5" component="div" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+          MedAI
+        </Typography>
+      </Box>
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        AI-Powered Healthcare Platform
+      </Typography>
+      
       <List>
-        {navigationItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton
-              selected={location.pathname === item.path}
-              onClick={() => {
-                navigate(item.path);
-                if (isMobile) {
-                  setMobileOpen(false);
-                }
-              }}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
+        {menuItems.map((item) => (
+          <ListItem
+            button
+            key={item.text}
+            onClick={() => {
+              navigate(item.path);
+              if (isMobile) setMobileOpen(false);
+            }}
+            selected={location.pathname === item.path}
+            sx={{
+              mb: 1,
+              borderRadius: 2,
+              '&.Mui-selected': {
+                backgroundColor: 'primary.main',
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: 'primary.dark',
+                },
+                '& .MuiListItemIcon-root': {
+                  color: 'white',
+                },
+              },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 40 }}>
+              {item.icon}
+            </ListItemIcon>
+            <ListItemText primary={item.text} />
           </ListItem>
         ))}
       </List>
@@ -125,14 +137,14 @@ const Layout = ({ children }) => {
 
   return (
     <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
-      
-      {/* App Bar */}
       <AppBar
         position="fixed"
         sx={{
           width: { md: `calc(100% - ${drawerWidth}px)` },
           ml: { md: `${drawerWidth}px` },
+          backgroundColor: 'white',
+          color: 'text.primary',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
         }}
       >
         <Toolbar>
@@ -146,74 +158,46 @@ const Layout = ({ children }) => {
             <MenuIcon />
           </IconButton>
           
-          <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-            <Logo />
-            <Typography variant="body2" sx={{ ml: 2, opacity: 0.8 }}>
-              {navigationItems.find(item => item.path === location.pathname)?.text || 'AI Telemedicine Platform'}
-            </Typography>
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+            MedAI Healthcare Platform
+          </Typography>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Chip 
+              label="AI Active" 
+              color="success" 
+              size="small" 
+              icon={<MonitorHeart />}
+            />
+            
+            <IconButton color="inherit">
+              <Badge badgeContent={3} color="error">
+                <Notifications />
+              </Badge>
+            </IconButton>
+            
+            <IconButton
+              onClick={handleMenuOpen}
+              color="inherit"
+            >
+              <Avatar sx={{ width: 32, height: 32 }}>
+                <AccountCircle />
+              </Avatar>
+            </IconButton>
           </Box>
-
-          {/* Notifications */}
-          <IconButton color="inherit" sx={{ mr: 1 }}>
-            <Badge badgeContent={3} color="error">
-              <Notifications />
-            </Badge>
-          </IconButton>
-
-          {/* Profile Menu */}
-          <IconButton
-            onClick={handleProfileMenuOpen}
-            sx={{ ml: 1 }}
-            color="inherit"
-          >
-            <Avatar sx={{ width: 32, height: 32 }}>
-              <AccountCircle />
-            </Avatar>
-          </IconButton>
-
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleProfileMenuClose}
-            onClick={handleProfileMenuClose}
-            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-          >
-            <MenuItem onClick={() => navigate('/profile')}>
-              <ListItemIcon>
-                <Person fontSize="small" />
-              </ListItemIcon>
-              Profile
-            </MenuItem>
-            <MenuItem onClick={() => navigate('/settings')}>
-              <ListItemIcon>
-                <Settings fontSize="small" />
-              </ListItemIcon>
-              Settings
-            </MenuItem>
-            <Divider />
-            <MenuItem onClick={handleLogout}>
-              <ListItemIcon>
-                <Logout fontSize="small" />
-              </ListItemIcon>
-              Logout
-            </MenuItem>
-          </Menu>
         </Toolbar>
       </AppBar>
 
-      {/* Sidebar */}
       <Box
         component="nav"
         sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
       >
-        {/* Mobile drawer */}
         <Drawer
           variant="temporary"
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
+            keepMounted: true,
           }}
           sx={{
             display: { xs: 'block', md: 'none' },
@@ -222,8 +206,6 @@ const Layout = ({ children }) => {
         >
           {drawer}
         </Drawer>
-        
-        {/* Desktop drawer */}
         <Drawer
           variant="permanent"
           sx={{
@@ -236,20 +218,52 @@ const Layout = ({ children }) => {
         </Drawer>
       </Box>
 
-      {/* Main content */}
       <Box
         component="main"
-        sx={{ 
-          flexGrow: 1, 
-          p: 3, 
-          background: '#f5f5f5', 
-          minHeight: '100vh',
+        sx={{
+          flexGrow: 1,
+          p: 3,
           width: { md: `calc(100% - ${drawerWidth}px)` },
-          mt: '64px' // Account for AppBar height
+          mt: 8,
         }}
       >
-        {children}
+        <Container maxWidth="xl">
+          {children}
+        </Container>
       </Box>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        <MenuItem onClick={handleMenuClose}>
+          <ListItemIcon>
+            <AccountCircle fontSize="small" />
+          </ListItemIcon>
+          Profile
+        </MenuItem>
+        <MenuItem onClick={handleMenuClose}>
+          <ListItemIcon>
+            <Settings fontSize="small" />
+          </ListItemIcon>
+          Settings
+        </MenuItem>
+        <MenuItem onClick={handleLogout}>
+          <ListItemIcon>
+            <Logout fontSize="small" />
+          </ListItemIcon>
+          Logout
+        </MenuItem>
+      </Menu>
     </Box>
   );
 };
