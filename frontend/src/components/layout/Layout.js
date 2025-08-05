@@ -37,14 +37,26 @@ import {
   AdminPanelSettings,
   People,
   Analytics,
+  Psychology,
+  Security,
+  Warning,
+  LocalHospital as LogoIcon,
 } from '@mui/icons-material';
-import { useAuth } from '../../context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const drawerWidth = 240;
 
+// Logo component
+const Logo = () => (
+  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <LogoIcon sx={{ color: 'white', fontSize: 28 }} />
+    <Typography variant="h6" sx={{ fontWeight: 700, color: 'white' }}>
+      MedAI
+    </Typography>
+  </Box>
+);
+
 const Layout = ({ children }) => {
-  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
@@ -66,46 +78,28 @@ const Layout = ({ children }) => {
   };
 
   const handleLogout = () => {
-    logout();
     handleProfileMenuClose();
+    navigate('/');
   };
 
-  const getNavigationItems = () => {
-    const baseItems = [
-      { text: 'Dashboard', icon: <Dashboard />, path: '/' },
-      { text: 'Appointments', icon: <CalendarToday />, path: '/appointments' },
-      { text: 'Video Calls', icon: <VideoCall />, path: '/video-calls' },
-      { text: 'Chat', icon: <Chat />, path: '/chat' },
-      { text: 'Symptom Checker', icon: <HealthAndSafety />, path: '/symptom-checker' },
-      { text: 'Medical Records', icon: <Description />, path: '/medical-records' },
-    ];
-
-    if (user?.role === 'DOCTOR') {
-      baseItems.push(
-        { text: 'Patients', icon: <People />, path: '/patients' },
-        { text: 'Analytics', icon: <Analytics />, path: '/analytics' }
-      );
-    }
-
-    if (user?.role === 'ADMIN') {
-      baseItems.push(
-        { text: 'User Management', icon: <People />, path: '/admin/users' },
-        { text: 'System Analytics', icon: <Analytics />, path: '/admin/analytics' },
-        { text: 'Settings', icon: <Settings />, path: '/admin/settings' }
-      );
-    }
-
-    return baseItems;
-  };
-
-  const navigationItems = getNavigationItems();
+  const navigationItems = [
+    { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
+    { text: 'Appointments', icon: <CalendarToday />, path: '/appointments' },
+    { text: 'Video Calls', icon: <VideoCall />, path: '/video-calls' },
+    { text: 'Chat', icon: <Chat />, path: '/chat' },
+    { text: 'Symptom Checker', icon: <HealthAndSafety />, path: '/symptom-checker' },
+    { text: 'Medical Records', icon: <Description />, path: '/medical-records' },
+    { text: 'Advanced AI', icon: <Psychology />, path: '/advanced-ai' },
+    { text: 'Patients', icon: <People />, path: '/patients' },
+    { text: 'Analytics', icon: <Analytics />, path: '/analytics' },
+    { text: 'Security', icon: <Security />, path: '/security' },
+    { text: 'Crisis Dashboard', icon: <Warning />, path: '/crisis-dashboard' },
+  ];
 
   const drawer = (
     <Box>
-      <Toolbar>
-        <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 700 }}>
-          AI Telemedicine
-        </Typography>
+      <Toolbar sx={{ backgroundColor: 'primary.main', color: 'white' }}>
+        <Logo />
       </Toolbar>
       <Divider />
       <List>
@@ -152,9 +146,12 @@ const Layout = ({ children }) => {
             <MenuIcon />
           </IconButton>
           
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            {navigationItems.find(item => item.path === location.pathname)?.text || 'AI Telemedicine'}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+            <Logo />
+            <Typography variant="body2" sx={{ ml: 2, opacity: 0.8 }}>
+              {navigationItems.find(item => item.path === location.pathname)?.text || 'AI Telemedicine Platform'}
+            </Typography>
+          </Box>
 
           {/* Notifications */}
           <IconButton color="inherit" sx={{ mr: 1 }}>
@@ -170,11 +167,7 @@ const Layout = ({ children }) => {
             color="inherit"
           >
             <Avatar sx={{ width: 32, height: 32 }}>
-              {user?.profileImageUrl ? (
-                <img src={user.profileImageUrl} alt="Profile" />
-              ) : (
-                <AccountCircle />
-              )}
+              <AccountCircle />
             </Avatar>
           </IconButton>
 
@@ -246,13 +239,15 @@ const Layout = ({ children }) => {
       {/* Main content */}
       <Box
         component="main"
-        sx={{
-          flexGrow: 1,
-          p: 3,
+        sx={{ 
+          flexGrow: 1, 
+          p: 3, 
+          background: '#f5f5f5', 
+          minHeight: '100vh',
           width: { md: `calc(100% - ${drawerWidth}px)` },
+          mt: '64px' // Account for AppBar height
         }}
       >
-        <Toolbar />
         {children}
       </Box>
     </Box>

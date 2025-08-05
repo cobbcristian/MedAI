@@ -1,0 +1,58 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Spring Boot Backend
+  - job_name: 'backend'
+    static_configs:
+      - targets: ['backend:8080']
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 10s
+
+  # AI Backend
+  - job_name: 'ai-backend'
+    static_configs:
+      - targets: ['ai-backend:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # Frontend (if it exposes metrics)
+  - job_name: 'frontend'
+    static_configs:
+      - targets: ['frontend:3000']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # MySQL (if using mysqld_exporter)
+  - job_name: 'mysql'
+    static_configs:
+      - targets: ['mysql:9104']
+    scrape_interval: 30s
+
+  # Redis (if using redis_exporter)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:9121']
+    scrape_interval: 30s
+
+  # Nginx (if using nginx_exporter)
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx:9113']
+    scrape_interval: 30s
+
+  # Node Exporter (system metrics)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 30s 

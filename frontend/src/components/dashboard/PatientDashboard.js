@@ -37,11 +37,26 @@ import { useAuth } from '../../context/AuthContext';
 import { useQuery } from 'react-query';
 import api from '../../services/api';
 import { format } from 'date-fns';
+import aiService from '../../services/aiService';
+
+function GlobalSymptomMapPlaceholder() {
+  return (
+    <Box my={4} p={3} bgcolor="#fff3cd" borderRadius={2} border={1} borderColor="#ffeeba">
+      <Typography variant="h6" color="textPrimary" gutterBottom>
+        Global Symptom Heatmap (Coming Soon)
+      </Typography>
+      <Typography variant="body2" color="textSecondary">
+        This section will display a real-time outbreak heatmap and early warning system. (Vue component integration required)
+      </Typography>
+    </Box>
+  );
+}
 
 const PatientDashboard = () => {
   const { user } = useAuth();
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [offlineSyncStatus, setOfflineSyncStatus] = useState(null);
 
   // Fetch upcoming appointments
   const { data: appointments, isLoading: appointmentsLoading } = useQuery(
@@ -62,18 +77,34 @@ const PatientDashboard = () => {
     }
   }, [appointments]);
 
+  // Fetch offline sync status
+  const { data: syncStatus, isLoading: syncLoading } = useQuery(
+    'offline-sync-status',
+    async () => {
+      const response = await aiService.getOfflineSyncStatus();
+      return response;
+    },
+    {
+      refetchInterval: 30000, // Refetch every 30 seconds
+    }
+  );
+
+  useEffect(() => {
+    if (syncStatus) {
+      setOfflineSyncStatus(syncStatus);
+    }
+  }, [syncStatus]);
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'CONFIRMED':
         return 'success';
-      case 'SCHEDULED':
-        return 'info';
-      case 'IN_PROGRESS':
+      case 'PENDING':
         return 'warning';
-      case 'COMPLETED':
-        return 'default';
       case 'CANCELLED':
         return 'error';
+      case 'COMPLETED':
+        return 'info';
       default:
         return 'default';
     }
@@ -83,43 +114,70 @@ const PatientDashboard = () => {
     switch (status) {
       case 'CONFIRMED':
         return <CheckCircle />;
-      case 'SCHEDULED':
+      case 'PENDING':
         return <Schedule />;
-      case 'IN_PROGRESS':
-        return <VideoCall />;
-      case 'COMPLETED':
-        return <CheckCircle />;
       case 'CANCELLED':
         return <Cancel />;
+      case 'COMPLETED':
+        return <CheckCircle />;
       default:
         return <Schedule />;
     }
   };
 
-  if (loading) {
+  function OfflineSyncStatus() {
+    if (syncLoading) {
+      return <CircularProgress size={20} />;
+    }
+
+    if (!offlineSyncStatus) {
+      return <Chip label="Online Mode" color="success" size="small" />;
+    }
+
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Chip 
+          label={offlineSyncStatus.isOnline ? "Online" : "Offline"} 
+          color={offlineSyncStatus.isOnline ? "success" : "warning"} 
+          size="small" 
+        />
+        {offlineSyncStatus.pendingSync && (
+          <Chip label={`${offlineSyncStatus.pendingSync} pending`} color="info" size="small" />
+        )}
       </Box>
     );
   }
 
+  if (loading) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
+
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      {/* Welcome Section */}
+    <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Welcome back, {user.firstName}!
+        <Typography variant="h4" gutterBottom>
+          Welcome back, {user?.name || 'Patient'}!
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Here's your health overview and upcoming appointments
+          Here's your health summary and upcoming appointments.
         </Typography>
+      </Box>
+
+      {/* Offline Sync Status */}
+      <Box sx={{ mb: 3 }}>
+        <OfflineSyncStatus />
       </Box>
 
       <Grid container spacing={3}>
         {/* Quick Actions */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ height: '100%' }}>
+          <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 Quick Actions
@@ -127,35 +185,31 @@ const PatientDashboard = () => {
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Button
                   variant="contained"
-                  startIcon={<Add />}
+                  startIcon={<VideoCall />}
                   fullWidth
-                  href="/appointments"
                 >
-                  Book Appointment
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<HealthAndSafety />}
-                  fullWidth
-                  href="/symptom-checker"
-                >
-                  Symptom Checker
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<Description />}
-                  fullWidth
-                  href="/medical-records"
-                >
-                  View Records
+                  Join Video Call
                 </Button>
                 <Button
                   variant="outlined"
                   startIcon={<Chat />}
                   fullWidth
-                  href="/chat"
                 >
-                  Chat with Doctor
+                  Start Chat
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<LocalHospital />}
+                  fullWidth
+                >
+                  Book Appointment
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<Description />}
+                  fullWidth
+                >
+                  View Records
                 </Button>
               </Box>
             </CardContent>
@@ -166,81 +220,39 @@ const PatientDashboard = () => {
         <Grid item xs={12} md={8}>
           <Card>
             <CardContent>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <CalendarToday color="primary" />
                 <Typography variant="h6">
                   Upcoming Appointments
                 </Typography>
-                <Button
-                  variant="text"
-                  href="/appointments"
-                  endIcon={<Add />}
-                >
-                  View All
-                </Button>
               </Box>
-              
               {appointmentsLoading ? (
                 <Box display="flex" justifyContent="center" p={3}>
                   <CircularProgress />
                 </Box>
               ) : upcomingAppointments.length === 0 ? (
                 <Alert severity="info">
-                  No upcoming appointments. Book your first consultation!
+                  No upcoming appointments. Book your next consultation!
                 </Alert>
               ) : (
                 <List>
                   {upcomingAppointments.map((appointment, index) => (
-                    <React.Fragment key={appointment.id}>
+                    <React.Fragment key={appointment.id || index}>
                       <ListItem>
                         <ListItemAvatar>
-                          <Avatar sx={{ bgcolor: 'primary.main' }}>
-                            <Person />
+                          <Avatar sx={{ bgcolor: `${getStatusColor(appointment.status)}.main` }}>
+                            {getStatusIcon(appointment.status)}
                           </Avatar>
                         </ListItemAvatar>
                         <ListItemText
-                          primary={
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Typography variant="subtitle1">
-                                Dr. {appointment.doctor?.firstName} {appointment.doctor?.lastName}
-                              </Typography>
-                              <Chip
-                                icon={getStatusIcon(appointment.status)}
-                                label={appointment.status}
-                                color={getStatusColor(appointment.status)}
-                                size="small"
-                              />
-                            </Box>
-                          }
-                          secondary={
-                            <Box>
-                              <Typography variant="body2" color="text.secondary">
-                                {format(new Date(appointment.scheduledAt), 'PPP p')}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                {appointment.type} Consultation • ${appointment.fee}
-                              </Typography>
-                            </Box>
-                          }
+                          primary={`Dr. ${appointment.doctorName || 'Doctor'}`}
+                          secondary={`${format(new Date(appointment.date), 'MMM dd, yyyy')} at ${appointment.time}`}
                         />
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                          {appointment.status === 'CONFIRMED' && (
-                            <Button
-                              variant="contained"
-                              size="small"
-                              startIcon={<VideoCall />}
-                              href={`/video-call/${appointment.id}`}
-                            >
-                              Join
-                            </Button>
-                          )}
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            href={`/appointments/${appointment.id}`}
-                          >
-                            Details
-                          </Button>
-                        </Box>
+                        <Chip
+                          label={appointment.status}
+                          color={getStatusColor(appointment.status)}
+                          size="small"
+                        />
                       </ListItem>
                       {index < upcomingAppointments.length - 1 && <Divider />}
                     </React.Fragment>
@@ -283,7 +295,6 @@ const PatientDashboard = () => {
             </CardContent>
           </Card>
         </Grid>
-
         {/* Recent Activity */}
         <Grid item xs={12} md={6}>
           <Card>
@@ -329,7 +340,6 @@ const PatientDashboard = () => {
             </CardContent>
           </Card>
         </Grid>
-
         {/* Notifications */}
         <Grid item xs={12}>
           <Card>
@@ -357,4 +367,4 @@ const PatientDashboard = () => {
   );
 };
 
-export default PatientDashboard; 
+export default PatientDashboard;

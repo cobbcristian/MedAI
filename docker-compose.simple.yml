@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: telemedicine-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: telemedicine
+      MYSQL_USER: telemedicine_user
+      MYSQL_PASSWORD: telemedicine_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - telemedicine-network
+
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    container_name: telemedicine-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - telemedicine-network
+
+  # AI Backend (Python FastAPI)
+  ai-backend:
+    build:
+      context: ./ai_backend
+      dockerfile: Dockerfile
+    container_name: telemedicine-ai-backend
+    restart: unless-stopped
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DATABASE_URL=mysql://telemedicine_user:telemedicine_password@mysql:3306/telemedicine
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - telemedicine-network
+    volumes:
+      - ./ai_backend/uploads:/app/uploads
+
+  # Frontend (React)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: telemedicine-frontend
+    restart: unless-stopped
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080
+      - REACT_APP_AI_API_URL=http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - ai-backend
+    networks:
+      - telemedicine-network
+
+volumes:
+  mysql_data:
+
+networks:
+  telemedicine-network:
+    driver: bridge 

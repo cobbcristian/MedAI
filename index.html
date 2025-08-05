@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Telemedicine Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .api-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .api-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .api-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .api-link {
+            background: #667eea;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            text-align: center;
+            transition: background 0.3s ease;
+        }
+        
+        .api-link:hover {
+            background: #5a6fd8;
+        }
+        
+        .status {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        
+        .target-markets {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .target-markets h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .markets-list {
+            list-style: none;
+        }
+        
+        .markets-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .markets-list li:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 AI Telemedicine Platform</h1>
+            <p>Advanced AI-powered medical analysis and healthcare solutions</p>
+            <div class="status">✅ LIVE & OPERATIONAL</div>
+        </div>
+        
+        <div class="api-section">
+            <h2>🔗 API Endpoints</h2>
+            <div class="api-links">
+                <a href="https://medai-production-45a2.up.railway.app/" class="api-link" target="_blank">Main API</a>
+                <a href="https://medai-production-45a2.up.railway.app/health" class="api-link" target="_blank">Health Check</a>
+                <a href="https://medai-production-45a2.up.railway.app/docs" class="api-link" target="_blank">API Documentation</a>
+                <a href="https://medai-production-45a2.up.railway.app/test" class="api-link" target="_blank">Test Endpoint</a>
+            </div>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>🔬 Bloodwork Analysis</h3>
+                <p>Advanced bloodwork analysis with cancer risk assessment, life expectancy predictions, and personalized medication recommendations based on lab results.</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>📷 X-ray AI Analysis</h3>
+                <p>AI-powered medical image analysis with automatic diagnosis, doctor's notes integration, and detailed abnormality detection for X-rays, CT scans, and MRIs.</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>💊 Medication Tracking</h3>
+                <p>Comprehensive medication history analysis with effectiveness tracking, side effect monitoring, life impact assessment, and dosage optimization recommendations.</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>💉 Vaccination Records</h3>
+                <p>Complete vaccination tracking with missing vaccine identification, risk assessment for missed vaccines, and personalized vaccination schedules.</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>⚕️ Surgical Guides</h3>
+                <p>Step-by-step surgical procedure guides for doctors with pre-op, intra-op, and post-op instructions, complication prevention, and success rate analysis.</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🤖 AI-Powered Insights</h3>
+                <p>Advanced AI algorithms providing comprehensive health assessments, risk predictions, and personalized treatment recommendations based on multiple data sources.</p>
+            </div>
+        </div>
+        
+        <div class="target-markets">
+            <h2>🎯 Target Markets</h2>
+            <ul class="markets-list">
+                <li><strong>🏥 Healthcare Systems & Clinics:</strong> Multi-location practices, regional health systems, telehealth providers</li>
+                <li><strong>💰 Healthtech Investors & VCs:</strong> AI x Health startups, scalable healthtech solutions</li>
+                <li><strong>🌍 NGOs & Global Health Orgs:</strong> WHO, GAVI, PATH, UNICEF, field-deployable solutions</li>
+                <li><strong>🏢 Health Insurance & Payers:</strong> UnitedHealth, Anthem, Humana, cost-saving automation</li>
+                <li><strong>🧪 Pharmaceutical & Med Device Companies:</strong> Remote patient monitoring, AI diagnostics for trials</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html> 

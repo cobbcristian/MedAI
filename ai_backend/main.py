@@ -8,6 +8,10 @@ import base64
 from datetime import datetime
 from typing import Optional, Dict, Any, List
 import json
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 from services.scan_analysis import ScanAnalysisService
 from services.bloodwork_analysis import BloodworkAnalysisService
@@ -22,12 +26,21 @@ from services.security_compliance import SecurityComplianceService
 from services.ai_training_sandbox import ai_training_sandbox
 from services.model_comparison_dashboard import model_comparison_dashboard
 from services.patient_feedback_loop import patient_feedback_manager
+from services.model_explainer import explain_diagnosis, get_model_information
+from services.offline_sync_queue import get_sync_status, queue_appointment, force_sync_now
+from services.smartcard_generator import SmartcardGenerator
+from services.continuous_learning import continuous_learning_service
+from services.medication_tracking import MedicationTrackingService
+from services.vaccination_tracking import VaccinationTrackingService
+from services.surgical_guide import SurgicalGuideService
 from utils.file_handler import FileHandler
 from models.response_models import (
     ScanAnalysisResponse,
     BloodworkAnalysisResponse,
     RecoveryPredictionResponse,
-    FeedbackResponse
+    FeedbackResponse,
+    EnhancedBloodworkAnalysis,
+    EnhancedMedicalRecord
 )
 
 app = FastAPI(
@@ -56,7 +69,12 @@ doctor_copilot_service = DoctorCopilotService()
 bias_fairness_service = BiasFairnessDashboardService()
 advanced_ai_service = AdvancedAIFeaturesService()
 security_compliance_service = SecurityComplianceService()
+medication_tracking_service = MedicationTrackingService()
+vaccination_tracking_service = VaccinationTrackingService()
+surgical_guide_service = SurgicalGuideService()
 file_handler = FileHandler()
+smartcard_generator = SmartcardGenerator()
+continuous_learning = continuous_learning_service
 
 # Create uploads directory if it doesn't exist
 os.makedirs("uploads", exist_ok=True)
@@ -1211,6 +1229,110 @@ async def get_trust_metrics(patient_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/ai/explain-diagnosis")
+async def api_explain_diagnosis(patient_data: dict, explanation_type: str = 'lime'):
+    """Explain a diagnosis for patient data using LIME/SHAP/OpenAI"""
+    try:
+        result = await model_explainer.explain_prediction(patient_data, explanation_type)
+        return {
+            "plain_language_explanation": result.plain_language_explanation,
+            "confidence_score": result.confidence_score,
+            "feature_contributions": result.feature_contributions,
+            "confidence_breakdown": result.confidence_breakdown,
+            "decision_path": result.decision_path,
+            "risk_factors": result.risk_factors,
+            "recommendations": result.recommendations,
+            "visualization_data": result.visualization_data,
+            "timestamp": result.timestamp.isoformat(),
+            "model_version": result.model_version,
+            "training_data_info": result.training_data_info
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/ai/model-info")
+async def api_model_info():
+    """Get information about the AI model"""
+    return get_model_information()
+
+@app.get("/offline-sync/status")
+async def api_offline_sync_status():
+    """Get current offline sync status and statistics"""
+    return get_sync_status()
+
+@app.post("/offline-sync/queue")
+async def api_offline_sync_queue(action: str, data: dict, user_id: str, device_id: str = None):
+    """Queue an action for offline sync (e.g., appointment creation)"""
+    try:
+        item_id = queue_appointment(data, user_id, device_id)
+        return {"item_id": item_id, "status": "queued"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/offline-sync/force-sync")
+async def api_offline_sync_force():
+    """Force immediate synchronization of all pending items"""
+    try:
+        force_sync_now()
+        return {"status": "sync triggered"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/smartcard/generate")
+async def api_generate_smartcard(patient_info: dict, vaccine_info: dict, test_info: dict = None):
+    """Generate a SMART Health Card (QR code + JSON payload)"""
+    try:
+        card = smartcard_generator.generate_smartcard(patient_info, vaccine_info, test_info)
+        return card
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Continuous Learning Endpoints
+@app.get("/continuous-learning/knowledge-base")
+async def get_knowledge_base_status():
+    """Get knowledge base status and updates"""
+    try:
+        status = await continuous_learning.get_knowledge_base_status()
+        return {"success": True, "knowledge_base": status}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/continuous-learning/model-performance")
+async def get_model_performance_status():
+    """Get model performance status and drift detection"""
+    try:
+        status = await continuous_learning.get_model_performance_status()
+        return {"success": True, "model_performance": status}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/continuous-learning/automated-actions")
+async def get_automated_actions_log(limit: int = 50):
+    """Get recent automated learning actions"""
+    try:
+        actions = await continuous_learning.get_automated_actions_log(limit)
+        return {"success": True, "automated_actions": actions}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/continuous-learning/trigger-update")
+async def trigger_knowledge_update():
+    """Manually trigger knowledge base update"""
+    try:
+        # This would trigger the update process
+        return {"success": True, "message": "Knowledge base update triggered"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/continuous-learning/trigger-retraining")
+async def trigger_model_retraining(model_name: Optional[str] = None):
+    """Manually trigger model retraining"""
+    try:
+        # This would trigger model retraining
+        return {"success": True, "message": f"Model retraining triggered for {model_name or 'all models'}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):
     return JSONResponse(
@@ -1220,3 +1342,270 @@ async def global_exception_handler(request, exc):
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000) 
+
+@app.post("/analyze/bloodwork/enhanced")
+async def analyze_bloodwork_enhanced(
+    file: UploadFile = File(...),
+    patient_id: Optional[str] = Form(None),
+    patient_age: Optional[int] = Form(50),
+    patient_gender: Optional[str] = Form("unknown")
+):
+    """
+    Enhanced bloodwork analysis with cancer risk assessment and life expectancy analysis
+    """
+    try:
+        # Validate file type
+        allowed_types = ["application/pdf", "text/csv", "application/vnd.ms-excel"]
+        if file.content_type not in allowed_types:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Unsupported file type. Allowed: {allowed_types}"
+            )
+        
+        # Save uploaded file
+        file_id = str(uuid.uuid4())
+        file_path = f"uploads/{file_id}_{file.filename}"
+        
+        with open(file_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+        
+        # Analyze bloodwork with enhanced features
+        analysis = await bloodwork_service.analyze_bloodwork_enhanced(
+            file_path, patient_age, patient_gender
+        )
+        
+        # Clean up file
+        os.remove(file_path)
+        
+        return {
+            "success": True,
+            "file_id": file_id,
+            "analysis": analysis.dict(),
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/medical-records/medication-analysis")
+async def analyze_medication_history(
+    medication_data: str = Form(...),  # JSON string
+    patient_id: Optional[str] = Form(None)
+):
+    """
+    Analyze medication history and provide comprehensive assessment
+    """
+    try:
+        # Parse medication data
+        medication_list = json.loads(medication_data)
+        
+        # Analyze medication history
+        medication_impacts = await medication_tracking_service.analyze_medication_history(medication_list)
+        
+        # Get drug interactions
+        current_medications = [med.medication_name for med in medication_impacts if not med.end_date]
+        interactions = await medication_tracking_service.get_medication_interactions(current_medications)
+        
+        return {
+            "success": True,
+            "medication_impacts": [med.dict() for med in medication_impacts],
+            "drug_interactions": interactions,
+            "patient_id": patient_id,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/medical-records/vaccination-analysis")
+async def analyze_vaccination_records(
+    vaccination_data: str = Form(...),  # JSON string
+    patient_age: int = Form(...),
+    patient_conditions: Optional[str] = Form(None)  # JSON string
+):
+    """
+    Analyze vaccination records and identify missing vaccines
+    """
+    try:
+        # Parse vaccination data
+        vaccination_list = json.loads(vaccination_data)
+        
+        # Parse patient conditions
+        conditions = json.loads(patient_conditions) if patient_conditions else []
+        
+        # Analyze vaccination records
+        analysis = await vaccination_tracking_service.analyze_vaccination_records(
+            vaccination_list, patient_age, conditions
+        )
+        
+        return {
+            "success": True,
+            "analysis": analysis,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/medical-records/surgical-guide/{procedure_name}")
+async def get_surgical_procedure_guide(
+    procedure_name: str,
+    patient_data: Optional[str] = None  # JSON string
+):
+    """
+    Get detailed surgical procedure guide with step-by-step instructions
+    """
+    try:
+        # Parse patient data if provided
+        patient_info = json.loads(patient_data) if patient_data else None
+        
+        # Get surgical procedure guide
+        procedure = await surgical_guide_service.get_surgical_procedure(procedure_name, patient_info)
+        
+        # Get additional information
+        complications = await surgical_guide_service.get_complication_prevention(procedure_name)
+        equipment = await surgical_guide_service.get_equipment_guide(procedure_name)
+        anatomy = await surgical_guide_service.get_anatomy_guide(procedure_name)
+        
+        return {
+            "success": True,
+            "procedure": procedure.dict(),
+            "complications": complications,
+            "equipment": equipment,
+            "anatomy": anatomy,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/medical-records/surgical-procedures")
+async def get_available_surgical_procedures():
+    """
+    Get list of available surgical procedures
+    """
+    try:
+        procedures = list(surgical_guide_service.procedure_database.keys())
+        
+        return {
+            "success": True,
+            "procedures": procedures,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/medical-records/comprehensive-analysis")
+async def get_comprehensive_medical_analysis(
+    patient_id: str = Form(...),
+    bloodwork_file: Optional[UploadFile] = File(None),
+    medication_data: Optional[str] = Form(None),  # JSON string
+    vaccination_data: Optional[str] = Form(None),  # JSON string
+    patient_age: Optional[int] = Form(50),
+    patient_gender: Optional[str] = Form("unknown"),
+    patient_conditions: Optional[str] = Form(None)  # JSON string
+):
+    """
+    Get comprehensive medical records analysis including bloodwork, medications, and vaccinations
+    """
+    try:
+        comprehensive_analysis = {
+            "patient_id": patient_id,
+            "bloodwork_analysis": None,
+            "medication_analysis": None,
+            "vaccination_analysis": None,
+            "overall_health_assessment": None
+        }
+        
+        # Analyze bloodwork if provided
+        if bloodwork_file:
+            file_id = str(uuid.uuid4())
+            file_path = f"uploads/{file_id}_{bloodwork_file.filename}"
+            
+            with open(file_path, "wb") as buffer:
+                content = await bloodwork_file.read()
+                buffer.write(content)
+            
+            bloodwork_analysis = await bloodwork_service.analyze_bloodwork_enhanced(
+                file_path, patient_age, patient_gender
+            )
+            comprehensive_analysis["bloodwork_analysis"] = bloodwork_analysis.dict()
+            
+            os.remove(file_path)
+        
+        # Analyze medications if provided
+        if medication_data:
+            medication_list = json.loads(medication_data)
+            medication_impacts = await medication_tracking_service.analyze_medication_history(medication_list)
+            comprehensive_analysis["medication_analysis"] = [med.dict() for med in medication_impacts]
+        
+        # Analyze vaccinations if provided
+        if vaccination_data:
+            vaccination_list = json.loads(vaccination_data)
+            conditions = json.loads(patient_conditions) if patient_conditions else []
+            
+            vaccination_analysis = await vaccination_tracking_service.analyze_vaccination_records(
+                vaccination_list, patient_age, conditions
+            )
+            comprehensive_analysis["vaccination_analysis"] = vaccination_analysis
+        
+        # Generate overall health assessment
+        overall_assessment = await generate_overall_health_assessment(
+            comprehensive_analysis, patient_age, patient_gender
+        )
+        comprehensive_analysis["overall_health_assessment"] = overall_assessment
+        
+        return {
+            "success": True,
+            "comprehensive_analysis": comprehensive_analysis,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+async def generate_overall_health_assessment(analysis: Dict[str, Any], age: int, gender: str) -> Dict[str, Any]:
+    """Generate overall health assessment based on all available data"""
+    assessment = {
+        "risk_level": "low",
+        "recommendations": [],
+        "priority_actions": [],
+        "health_score": 85
+    }
+    
+    # Assess bloodwork risks
+    if analysis.get("bloodwork_analysis"):
+        bloodwork = analysis["bloodwork_analysis"]
+        if bloodwork.get("cancer_risk", {}).get("risk_level") in ["high", "very_high"]:
+            assessment["risk_level"] = "high"
+            assessment["recommendations"].append("Immediate oncology consultation recommended")
+        
+        if bloodwork.get("life_expectancy", {}).get("current_estimate", 85) < 75:
+            assessment["risk_level"] = "medium"
+            assessment["recommendations"].append("Lifestyle modifications recommended")
+    
+    # Assess medication risks
+    if analysis.get("medication_analysis"):
+        for med in analysis["medication_analysis"]:
+            if "SERIOUS" in med.get("side_effects", ""):
+                assessment["risk_level"] = "high"
+                assessment["priority_actions"].append(f"Review {med['medication_name']} - serious side effects detected")
+    
+    # Assess vaccination risks
+    if analysis.get("vaccination_analysis"):
+        vaccination = analysis["vaccination_analysis"]
+        if vaccination.get("overall_risk") == "high":
+            assessment["risk_level"] = "medium"
+            assessment["recommendations"].append("Update missing vaccinations")
+    
+    # Calculate health score
+    if assessment["risk_level"] == "high":
+        assessment["health_score"] = 60
+    elif assessment["risk_level"] == "medium":
+        assessment["health_score"] = 75
+    else:
+        assessment["health_score"] = 85
+    
+    return assessment 

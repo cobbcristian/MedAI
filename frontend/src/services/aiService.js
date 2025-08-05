@@ -594,6 +594,81 @@ class AIService {
       throw error;
     }
   }
+
+  // Model Explainer API calls
+  async explainDiagnosis(patientData, explanationType = 'lime') {
+    try {
+      const response = await api.post('/ai/explain-diagnosis', {
+        patient_data: patientData,
+        explanation_type: explanationType
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error explaining diagnosis:', error);
+      throw error;
+    }
+  }
+
+  async getModelInfo() {
+    try {
+      const response = await api.get('/ai/model-info');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting model info:', error);
+      throw error;
+    }
+  }
+
+  // Offline Sync Queue API calls
+  async getOfflineSyncStatus() {
+    try {
+      const response = await api.get('/offline-sync/status');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting offline sync status:', error);
+      throw error;
+    }
+  }
+
+  async queueOfflineAction(action, data, userId, deviceId = null) {
+    try {
+      const response = await api.post('/offline-sync/queue', {
+        action,
+        data,
+        user_id: userId,
+        device_id: deviceId
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error queuing offline action:', error);
+      throw error;
+    }
+  }
+
+  async forceOfflineSync() {
+    try {
+      const response = await api.post('/offline-sync/force-sync');
+      return response.data;
+    } catch (error) {
+      console.error('Error forcing offline sync:', error);
+      throw error;
+    }
+  }
+
+  // Smartcard Generator API calls
+  async generateSmartcard(patientInfo, vaccineInfo, testInfo = null) {
+    try {
+      const response = await api.post('/smartcard/generate', {
+        patient_info: patientInfo,
+        vaccine_info: vaccineInfo,
+        test_info: testInfo
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error generating smartcard:', error);
+      throw error;
+    }
+  }
 }
 
 export default new AIService(); 

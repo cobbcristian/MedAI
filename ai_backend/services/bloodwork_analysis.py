@@ -6,7 +6,7 @@ import re
 import time
 from typing import Dict, List, Any, Optional
 import logging
-from models.response_models import BloodworkAnalysisResult, LabValue
+from models.response_models import BloodworkAnalysisResult, LabValue, EnhancedBloodworkAnalysis, CancerRisk, LifeExpectancy
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +15,8 @@ class BloodworkAnalysisService:
         self.model_status = "loaded"
         self.reference_ranges = self._load_reference_ranges()
         self.critical_values = self._load_critical_values()
+        self.cancer_markers = self._load_cancer_markers()
+        self.life_expectancy_factors = self._load_life_expectancy_factors()
         
     def _load_reference_ranges(self) -> Dict[str, Dict[str, Any]]:
         """Load reference ranges for common lab values"""
@@ -132,6 +134,37 @@ class BloodworkAnalysisService:
                 "normal_range": (44, 147),
                 "critical_low": 20,
                 "critical_high": 500
+            },
+            # Cancer markers
+            "PSA": {
+                "unit": "ng/mL",
+                "normal_range": (0, 4.0),
+                "critical_low": 0,
+                "critical_high": 20.0
+            },
+            "CEA": {
+                "unit": "ng/mL",
+                "normal_range": (0, 3.0),
+                "critical_low": 0,
+                "critical_high": 10.0
+            },
+            "AFP": {
+                "unit": "ng/mL",
+                "normal_range": (0, 10.0),
+                "critical_low": 0,
+                "critical_high": 400.0
+            },
+            "CA-125": {
+                "unit": "U/mL",
+                "normal_range": (0, 35.0),
+                "critical_low": 0,
+                "critical_high": 200.0
+            },
+            "CA-19-9": {
+                "unit": "U/mL",
+                "normal_range": (0, 37.0),
+                "critical_low": 0,
+                "critical_high": 1000.0
             }
         }
     
@@ -151,6 +184,66 @@ class BloodworkAnalysisService:
                 "Potassium": 7.0,
                 "Hemoglobin": 20.0,
                 "Platelets": 1000
+            }
+        }
+    
+    def _load_cancer_markers(self) -> Dict[str, Dict[str, Any]]:
+        """Load cancer marker information and risk factors"""
+        return {
+            "PSA": {
+                "cancer_type": "Prostate",
+                "elevated_risk": 4.0,
+                "high_risk": 10.0,
+                "age_factors": {"50-59": 3.0, "60-69": 4.0, "70+": 5.0}
+            },
+            "CEA": {
+                "cancer_type": "Colorectal",
+                "elevated_risk": 3.0,
+                "high_risk": 10.0,
+                "smoking_factor": 1.5
+            },
+            "AFP": {
+                "cancer_type": "Liver",
+                "elevated_risk": 10.0,
+                "high_risk": 400.0,
+                "hepatitis_factor": 2.0
+            },
+            "CA-125": {
+                "cancer_type": "Ovarian",
+                "elevated_risk": 35.0,
+                "high_risk": 200.0,
+                "menopause_factor": 1.3
+            },
+            "CA-19-9": {
+                "cancer_type": "Pancreatic",
+                "elevated_risk": 37.0,
+                "high_risk": 1000.0,
+                "diabetes_factor": 1.5
+            }
+        }
+    
+    def _load_life_expectancy_factors(self) -> Dict[str, Dict[str, Any]]:
+        """Load factors that affect life expectancy"""
+        return {
+            "cardiovascular": {
+                "risk_factors": ["high_cholesterol", "hypertension", "diabetes", "obesity"],
+                "life_reduction": {"high": 10, "medium": 5, "low": 2}
+            },
+            "kidney": {
+                "risk_factors": ["high_creatinine", "high_bun", "proteinuria"],
+                "life_reduction": {"high": 15, "medium": 8, "low": 3}
+            },
+            "liver": {
+                "risk_factors": ["high_alt", "high_ast", "high_bilirubin"],
+                "life_reduction": {"high": 12, "medium": 6, "low": 2}
+            },
+            "cancer": {
+                "risk_factors": ["elevated_markers", "family_history", "age"],
+                "life_reduction": {"high": 20, "medium": 10, "low": 5}
+            },
+            "diabetes": {
+                "risk_factors": ["high_glucose", "high_hba1c"],
+                "life_reduction": {"high": 8, "medium": 4, "low": 2}
             }
         }
     
@@ -190,333 +283,273 @@ class BloodworkAnalysisService:
             logger.error(f"Error analyzing bloodwork: {e}")
             raise
     
-    async def _parse_pdf(self, file_path: str) -> List[LabValue]:
-        """Parse lab values from PDF file"""
+    async def analyze_bloodwork_enhanced(self, file_path: str, patient_age: int = 50, patient_gender: str = "unknown") -> EnhancedBloodworkAnalysis:
+        """
+        Enhanced bloodwork analysis with cancer risk and life expectancy assessment
+        """
+        start_time = time.time()
+        
         try:
-            lab_values = []
+            # Get basic analysis
+            basic_analysis = await self.analyze_bloodwork(file_path)
             
-            # Try pdfplumber first
-            with pdfplumber.open(file_path) as pdf:
-                for page in pdf.pages:
-                    text = page.extract_text()
-                    if text:
-                        values = self._extract_lab_values_from_text(text)
-                        lab_values.extend(values)
+            # Enhanced analysis
+            cancer_risk = self._assess_cancer_risk(basic_analysis.lab_values, patient_age, patient_gender)
+            life_expectancy = self._assess_life_expectancy(basic_analysis.lab_values, patient_age, patient_gender)
+            interventions = self._generate_interventions(basic_analysis.lab_values, cancer_risk, life_expectancy)
+            medications = self._suggest_medications(basic_analysis.lab_values, cancer_risk, life_expectancy)
             
-            # If no values found, try tabula for tables
-            if not lab_values:
-                tables = tabula.read_pdf(file_path, pages='all')
-                for table in tables:
-                    values = self._extract_lab_values_from_table(table)
-                    lab_values.extend(values)
+            processing_time = time.time() - start_time
             
-            return lab_values
+            return EnhancedBloodworkAnalysis(
+                lab_values=basic_analysis.lab_values,
+                abnormalities=basic_analysis.abnormalities,
+                recommendations=basic_analysis.recommendations,
+                urgency_level=basic_analysis.urgency_level,
+                suggested_tests=basic_analysis.suggested_tests,
+                cancer_risk=cancer_risk,
+                life_expectancy=life_expectancy,
+                interventions=interventions,
+                medications=medications,
+                processing_time=processing_time
+            )
             
         except Exception as e:
-            logger.error(f"Error parsing PDF: {e}")
+            logger.error(f"Error in enhanced bloodwork analysis: {e}")
             raise
     
-    async def _parse_csv(self, file_path: str) -> List[LabValue]:
-        """Parse lab values from CSV file"""
-        try:
-            df = pd.read_csv(file_path)
-            return self._extract_lab_values_from_dataframe(df)
-            
-        except Exception as e:
-            logger.error(f"Error parsing CSV: {e}")
-            raise
-    
-    def _extract_lab_values_from_text(self, text: str) -> List[LabValue]:
-        """Extract lab values from text using regex patterns"""
-        lab_values = []
+    def _assess_cancer_risk(self, lab_values: List[LabValue], age: int, gender: str) -> CancerRisk:
+        """Assess cancer risk based on lab values and patient factors"""
+        risk_factors = []
+        total_risk = 0.0
         
-        # Common patterns for lab value extraction
-        patterns = [
-            r'(\w+(?:\s+\w+)*)\s*:?\s*([\d.]+)\s*([a-zA-Z/%]+)',
-            r'([\w\s]+)\s+([\d.]+)\s+([a-zA-Z/%]+)',
-            r'([\w\s]+)\s*=\s*([\d.]+)\s*([a-zA-Z/%]+)'
-        ]
-        
-        for pattern in patterns:
-            matches = re.findall(pattern, text, re.IGNORECASE)
-            for match in matches:
-                name, value, unit = match
-                name = name.strip()
+        # Check cancer markers
+        for lab_value in lab_values:
+            if lab_value.name in self.cancer_markers:
+                marker_info = self.cancer_markers[lab_value.name]
                 
-                # Clean up name and check if it's a known lab test
-                normalized_name = self._normalize_lab_name(name)
-                if normalized_name in self.reference_ranges:
-                    try:
-                        numeric_value = float(value)
-                        lab_value = self._create_lab_value(normalized_name, numeric_value, unit)
-                        if lab_value:
-                            lab_values.append(lab_value)
-                    except ValueError:
-                        continue
+                if lab_value.value > marker_info["high_risk"]:
+                    risk_factors.append(f"Very high {lab_value.name} ({lab_value.value} {lab_value.unit})")
+                    total_risk += 0.4
+                elif lab_value.value > marker_info["elevated_risk"]:
+                    risk_factors.append(f"Elevated {lab_value.name} ({lab_value.value} {lab_value.unit})")
+                    total_risk += 0.2
+                
+                # Age-specific factors
+                if lab_value.name == "PSA" and age >= 70:
+                    total_risk += 0.1
+                elif lab_value.name == "CA-125" and gender == "female" and age > 50:
+                    total_risk += 0.15
         
-        return lab_values
-    
-    def _extract_lab_values_from_table(self, table: pd.DataFrame) -> List[LabValue]:
-        """Extract lab values from pandas DataFrame"""
-        lab_values = []
+        # Additional risk factors
+        if any(lv.name == "Hemoglobin" and lv.status == "low" for lv in lab_values):
+            risk_factors.append("Anemia (possible blood loss)")
+            total_risk += 0.1
         
-        # Common column patterns
-        column_patterns = [
-            ['Test', 'Value', 'Unit', 'Reference'],
-            ['Lab Test', 'Result', 'Units', 'Normal Range'],
-            ['Test Name', 'Value', 'Unit', 'Reference Range']
-        ]
+        if any(lv.name == "Platelets" and lv.status == "high" for lv in lab_values):
+            risk_factors.append("Elevated platelets (possible inflammation)")
+            total_risk += 0.05
         
-        for pattern in column_patterns:
-            if all(col in table.columns for col in pattern):
-                for _, row in table.iterrows():
-                    try:
-                        test_name = str(row[pattern[0]]).strip()
-                        value = float(row[pattern[1]])
-                        unit = str(row[pattern[2]]).strip()
-                        
-                        normalized_name = self._normalize_lab_name(test_name)
-                        if normalized_name in self.reference_ranges:
-                            lab_value = self._create_lab_value(normalized_name, value, unit)
-                            if lab_value:
-                                lab_values.append(lab_value)
-                    except (ValueError, KeyError):
-                        continue
-        
-        return lab_values
-    
-    def _extract_lab_values_from_dataframe(self, df: pd.DataFrame) -> List[LabValue]:
-        """Extract lab values from CSV DataFrame"""
-        lab_values = []
-        
-        # Try to identify columns
-        for col in df.columns:
-            if any(keyword in col.lower() for keyword in ['test', 'lab', 'name']):
-                test_col = col
-                break
+        # Determine risk level
+        if total_risk >= 0.5:
+            risk_level = "very_high"
+        elif total_risk >= 0.3:
+            risk_level = "high"
+        elif total_risk >= 0.15:
+            risk_level = "medium"
         else:
-            # Default to first column
-            test_col = df.columns[0]
+            risk_level = "low"
         
-        # Find value and unit columns
-        value_col = None
-        unit_col = None
-        
-        for col in df.columns:
-            if any(keyword in col.lower() for keyword in ['value', 'result', 'level']):
-                value_col = col
-            elif any(keyword in col.lower() for keyword in ['unit', 'units']):
-                unit_col = col
-        
-        if value_col:
-            for _, row in df.iterrows():
-                try:
-                    test_name = str(row[test_col]).strip()
-                    value = float(row[value_col])
-                    unit = str(row.get(unit_col, '')).strip() if unit_col else ''
-                    
-                    normalized_name = self._normalize_lab_name(test_name)
-                    if normalized_name in self.reference_ranges:
-                        lab_value = self._create_lab_value(normalized_name, value, unit)
-                        if lab_value:
-                            lab_values.append(lab_value)
-                except (ValueError, KeyError):
-                    continue
-        
-        return lab_values
-    
-    def _normalize_lab_name(self, name: str) -> str:
-        """Normalize lab test names to match reference ranges"""
-        name = name.upper().strip()
-        
-        # Common variations
-        variations = {
-            'WBC': ['WHITE BLOOD CELLS', 'LEUKOCYTES', 'WBC COUNT'],
-            'RBC': ['RED BLOOD CELLS', 'ERYTHROCYTES', 'RBC COUNT'],
-            'Hemoglobin': ['HGB', 'HEMOGLOBIN', 'HB'],
-            'Hematocrit': ['HCT', 'HEMATOCRIT', 'PACKED CELL VOLUME'],
-            'Platelets': ['PLT', 'PLATELET COUNT', 'THROMBOCYTES'],
-            'Glucose': ['GLU', 'BLOOD SUGAR', 'GLUCOSE'],
-            'Creatinine': ['CREAT', 'CREATININE'],
-            'BUN': ['BLOOD UREA NITROGEN', 'UREA NITROGEN'],
-            'Sodium': ['NA', 'SODIUM'],
-            'Potassium': ['K', 'POTASSIUM'],
-            'Chloride': ['CL', 'CHLORIDE'],
-            'CO2': ['BICARBONATE', 'HCO3', 'CO2'],
-            'Calcium': ['CA', 'CALCIUM'],
-            'Albumin': ['ALB', 'ALBUMIN'],
-            'Total Protein': ['PROTEIN', 'TOTAL PROTEIN', 'TP'],
-            'Bilirubin Total': ['BILIRUBIN', 'TOTAL BILIRUBIN', 'TBIL'],
-            'ALT': ['ALANINE AMINOTRANSFERASE', 'SGPT', 'ALT'],
-            'AST': ['ASPARTATE AMINOTRANSFERASE', 'SGOT', 'AST'],
-            'Alkaline Phosphatase': ['ALP', 'ALKALINE PHOSPHATASE', 'ALK PHOS']
-        }
-        
-        for normalized, variants in variations.items():
-            if name in variants or any(variant in name for variant in variants):
-                return normalized
-        
-        return name
-    
-    def _create_lab_value(self, name: str, value: float, unit: str) -> Optional[LabValue]:
-        """Create LabValue object with proper validation"""
-        if name not in self.reference_ranges:
-            return None
-        
-        ref_range = self.reference_ranges[name]
-        normal_min, normal_max = ref_range["normal_range"]
-        
-        # Determine status
-        if value < ref_range["critical_low"]:
-            status = "critical"
-        elif value > ref_range["critical_high"]:
-            status = "critical"
-        elif value < normal_min:
-            status = "low"
-        elif value > normal_max:
-            status = "high"
+        # Generate recommendations
+        recommendations = []
+        if risk_level in ["high", "very_high"]:
+            recommendations.extend([
+                "Immediate oncology consultation recommended",
+                "Consider additional cancer screening tests",
+                "Family history assessment needed",
+                "Regular monitoring of tumor markers"
+            ])
+        elif risk_level == "medium":
+            recommendations.extend([
+                "Consider cancer screening in 6 months",
+                "Monitor for new symptoms",
+                "Lifestyle modifications recommended"
+            ])
         else:
-            status = "normal"
+            recommendations.append("Continue routine cancer screening schedule")
         
-        # Generate significance
-        significance = self._generate_significance(name, value, status)
-        
-        return LabValue(
-            name=name,
-            value=value,
-            unit=ref_range["unit"],
-            reference_range=f"{normal_min}-{normal_max}",
-            status=status,
-            significance=significance
+        return CancerRisk(
+            risk_level=risk_level,
+            probability=min(total_risk, 0.95),
+            factors=risk_factors,
+            recommendations=recommendations
         )
     
-    def _generate_significance(self, name: str, value: float, status: str) -> Optional[str]:
-        """Generate clinical significance for abnormal values"""
-        if status == "normal":
-            return None
+    def _assess_life_expectancy(self, lab_values: List[LabValue], age: int, gender: str) -> LifeExpectancy:
+        """Assess life expectancy based on lab values and health factors"""
+        base_life_expectancy = 85  # Base life expectancy
+        factors_affecting = []
+        interventions = []
+        total_reduction = 0
         
-        significance_map = {
-            "WBC": {
-                "high": "Possible infection, inflammation, or leukemia",
-                "low": "Possible bone marrow suppression, infection, or autoimmune disease"
-            },
-            "Hemoglobin": {
-                "high": "Possible polycythemia, dehydration, or high altitude",
-                "low": "Possible anemia, blood loss, or nutritional deficiency"
-            },
-            "Platelets": {
-                "high": "Possible inflammation, infection, or myeloproliferative disorder",
-                "low": "Possible bleeding risk, bone marrow disorder, or medication effect"
-            },
-            "Glucose": {
-                "high": "Possible diabetes, stress, or medication effect",
-                "low": "Possible hypoglycemia, insulin overdose, or fasting"
-            },
-            "Creatinine": {
-                "high": "Possible kidney dysfunction, dehydration, or medication effect",
-                "low": "Possible muscle wasting, pregnancy, or low protein diet"
-            },
-            "Sodium": {
-                "high": "Possible dehydration, diabetes insipidus, or excess salt intake",
-                "low": "Possible fluid overload, SIADH, or diuretic use"
-            },
-            "Potassium": {
-                "high": "Possible kidney failure, medication effect, or tissue damage",
-                "low": "Possible diuretic use, vomiting, or malnutrition"
-            }
-        }
+        # Cardiovascular factors
+        cv_risk = 0
+        if any(lv.name == "Glucose" and lv.status in ["high", "critical"] for lv in lab_values):
+            cv_risk += 1
+            factors_affecting.append("Elevated glucose (diabetes risk)")
+        if any(lv.name == "Hemoglobin" and lv.status == "low" for lv in lab_values):
+            cv_risk += 1
+            factors_affecting.append("Anemia (cardiovascular stress)")
         
-        return significance_map.get(name, {}).get(status)
+        if cv_risk >= 2:
+            total_reduction += 8
+            interventions.append("Cardiovascular risk management")
+        elif cv_risk == 1:
+            total_reduction += 4
+            interventions.append("Blood sugar monitoring")
+        
+        # Kidney function
+        kidney_risk = 0
+        if any(lv.name == "Creatinine" and lv.status in ["high", "critical"] for lv in lab_values):
+            kidney_risk += 1
+            factors_affecting.append("Elevated creatinine (kidney dysfunction)")
+        if any(lv.name == "BUN" and lv.status in ["high", "critical"] for lv in lab_values):
+            kidney_risk += 1
+            factors_affecting.append("Elevated BUN (kidney stress)")
+        
+        if kidney_risk >= 2:
+            total_reduction += 12
+            interventions.append("Nephrology consultation")
+        elif kidney_risk == 1:
+            total_reduction += 6
+            interventions.append("Kidney function monitoring")
+        
+        # Liver function
+        liver_risk = 0
+        if any(lv.name in ["ALT", "AST"] and lv.status in ["high", "critical"] for lv in lab_values):
+            liver_risk += 1
+            factors_affecting.append("Elevated liver enzymes")
+        if any(lv.name == "Bilirubin Total" and lv.status in ["high", "critical"] for lv in lab_values):
+            liver_risk += 1
+            factors_affecting.append("Elevated bilirubin")
+        
+        if liver_risk >= 2:
+            total_reduction += 10
+            interventions.append("Hepatology consultation")
+        elif liver_risk == 1:
+            total_reduction += 5
+            interventions.append("Liver function monitoring")
+        
+        # Cancer risk (from previous assessment)
+        cancer_markers = [lv for lv in lab_values if lv.name in self.cancer_markers]
+        if any(lv.status in ["high", "critical"] for lv in cancer_markers):
+            total_reduction += 15
+            factors_affecting.append("Elevated cancer markers")
+            interventions.append("Oncology consultation")
+        
+        # Calculate final life expectancy
+        estimated_life_expectancy = max(base_life_expectancy - total_reduction, 60)
+        confidence = max(0.7 - (total_reduction * 0.01), 0.3)
+        
+        return LifeExpectancy(
+            current_estimate=estimated_life_expectancy,
+            factors_affecting=factors_affecting,
+            interventions=interventions,
+            confidence=confidence
+        )
     
-    def _identify_abnormalities(self, lab_values: List[LabValue]) -> List[str]:
-        """Identify significant abnormalities"""
-        abnormalities = []
+    def _generate_interventions(self, lab_values: List[LabValue], cancer_risk: CancerRisk, life_expectancy: LifeExpectancy) -> List[str]:
+        """Generate specific interventions based on lab values and risk assessments"""
+        interventions = []
         
-        for lab_value in lab_values:
-            if lab_value.status in ["high", "low", "critical"]:
-                abnormality = f"{lab_value.name}: {lab_value.value} {lab_value.unit} ({lab_value.status})"
-                abnormalities.append(abnormality)
+        # Cardiovascular interventions
+        if any(lv.name == "Glucose" and lv.status in ["high", "critical"] for lv in lab_values):
+            interventions.extend([
+                "Diabetes management program",
+                "Regular blood sugar monitoring",
+                "Dietary modifications",
+                "Exercise program"
+            ])
         
-        return abnormalities
+        if any(lv.name == "Hemoglobin" and lv.status == "low" for lv in lab_values):
+            interventions.extend([
+                "Iron supplementation",
+                "Dietary iron enhancement",
+                "Investigate cause of anemia"
+            ])
+        
+        # Kidney interventions
+        if any(lv.name == "Creatinine" and lv.status in ["high", "critical"] for lv in lab_values):
+            interventions.extend([
+                "Kidney function monitoring",
+                "Blood pressure control",
+                "Protein restriction if needed",
+                "Avoid nephrotoxic medications"
+            ])
+        
+        # Cancer prevention
+        if cancer_risk.risk_level in ["high", "very_high"]:
+            interventions.extend([
+                "Regular cancer screening",
+                "Lifestyle modifications",
+                "Genetic counseling if indicated",
+                "Early detection protocols"
+            ])
+        
+        # General health
+        interventions.extend([
+            "Regular exercise program",
+            "Balanced diet",
+            "Stress management",
+            "Regular medical checkups"
+        ])
+        
+        return list(set(interventions))  # Remove duplicates
     
-    def _generate_recommendations(self, lab_values: List[LabValue], abnormalities: List[str]) -> List[str]:
-        """Generate clinical recommendations based on lab values"""
-        recommendations = []
+    def _suggest_medications(self, lab_values: List[LabValue], cancer_risk: CancerRisk, life_expectancy: LifeExpectancy) -> List[str]:
+        """Suggest medications based on lab values and risk assessments"""
+        medications = []
         
-        # Check for critical values
-        critical_values = [lv for lv in lab_values if lv.status == "critical"]
-        if critical_values:
-            recommendations.append("Immediate medical attention required for critical values")
+        # Diabetes medications
+        if any(lv.name == "Glucose" and lv.status in ["high", "critical"] for lv in lab_values):
+            medications.extend([
+                "Metformin (if not contraindicated)",
+                "Insulin (if needed)",
+                "SGLT2 inhibitors (consider)"
+            ])
         
-        # Check for anemia pattern
-        hgb = next((lv for lv in lab_values if lv.name == "Hemoglobin"), None)
-        hct = next((lv for lv in lab_values if lv.name == "Hematocrit"), None)
-        if hgb and hct and hgb.status == "low" and hct.status == "low":
-            recommendations.append("Consider iron studies and B12/folate levels")
+        # Blood pressure medications
+        if any(lv.name == "Creatinine" and lv.status in ["high", "critical"] for lv in lab_values):
+            medications.extend([
+                "ACE inhibitors (kidney protection)",
+                "ARBs (alternative to ACE inhibitors)",
+                "Diuretics (if fluid overload)"
+            ])
         
-        # Check for kidney function
-        creat = next((lv for lv in lab_values if lv.name == "Creatinine"), None)
-        bun = next((lv for lv in lab_values if lv.name == "BUN"), None)
-        if creat and creat.status in ["high", "critical"]:
-            recommendations.append("Consider kidney function evaluation and nephrology consult")
+        # Anemia treatment
+        if any(lv.name == "Hemoglobin" and lv.status == "low" for lv in lab_values):
+            medications.extend([
+                "Iron supplements",
+                "B12 supplements (if deficient)",
+                "Folic acid (if needed)"
+            ])
         
-        # Check for electrolyte imbalance
-        na = next((lv for lv in lab_values if lv.name == "Sodium"), None)
-        k = next((lv for lv in lab_values if lv.name == "Potassium"), None)
-        if na and k and (na.status != "normal" or k.status != "normal"):
-            recommendations.append("Monitor electrolytes and consider IV fluids if needed")
+        # Cholesterol medications
+        if any(lv.name == "Cholesterol" and lv.status in ["high", "critical"] for lv in lab_values):
+            medications.extend([
+                "Statins (cardiovascular protection)",
+                "Ezetimibe (if statins not tolerated)"
+            ])
         
-        # Check for infection markers
-        wbc = next((lv for lv in lab_values if lv.name == "WBC"), None)
-        if wbc and wbc.status == "high":
-            recommendations.append("Consider infection workup and antibiotic therapy")
+        # Cancer prevention (if high risk)
+        if cancer_risk.risk_level in ["high", "very_high"]:
+            medications.extend([
+                "Aspirin (if cardiovascular risk)",
+                "Vitamin D (if deficient)",
+                "Calcium supplements (if needed)"
+            ])
         
-        if not recommendations:
-            recommendations.append("All values within normal limits")
-        
-        return recommendations
-    
-    def _determine_urgency(self, lab_values: List[LabValue], abnormalities: List[str]) -> str:
-        """Determine urgency level based on lab values"""
-        critical_count = len([lv for lv in lab_values if lv.status == "critical"])
-        high_count = len([lv for lv in lab_values if lv.status == "high"])
-        low_count = len([lv for lv in lab_values if lv.status == "low"])
-        
-        if critical_count > 0:
-            return "critical"
-        elif high_count + low_count >= 3:
-            return "high"
-        elif high_count + low_count >= 1:
-            return "medium"
-        else:
-            return "low"
-    
-    def _suggest_additional_tests(self, lab_values: List[LabValue], abnormalities: List[str]) -> List[str]:
-        """Suggest additional tests based on current results"""
-        suggested_tests = []
-        
-        # Check for anemia
-        hgb = next((lv for lv in lab_values if lv.name == "Hemoglobin"), None)
-        if hgb and hgb.status == "low":
-            suggested_tests.extend(["Iron Studies", "B12", "Folate", "Reticulocyte Count"])
-        
-        # Check for kidney issues
-        creat = next((lv for lv in lab_values if lv.name == "Creatinine"), None)
-        if creat and creat.status in ["high", "critical"]:
-            suggested_tests.extend(["Urinalysis", "Protein/Creatinine Ratio", "Kidney Ultrasound"])
-        
-        # Check for liver issues
-        alt = next((lv for lv in lab_values if lv.name == "ALT"), None)
-        ast = next((lv for lv in lab_values if lv.name == "AST"), None)
-        if (alt and alt.status != "normal") or (ast and ast.status != "normal"):
-            suggested_tests.extend(["Liver Function Panel", "Hepatitis Panel", "Liver Ultrasound"])
-        
-        # Check for diabetes
-        glucose = next((lv for lv in lab_values if lv.name == "Glucose"), None)
-        if glucose and glucose.status == "high":
-            suggested_tests.extend(["HbA1c", "Fasting Glucose", "Oral Glucose Tolerance Test"])
-        
-        return suggested_tests
+        return medications
     
     async def get_model_status(self) -> Dict[str, Any]:
         """Get model status information"""

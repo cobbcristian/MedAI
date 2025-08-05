@@ -5,6 +5,8 @@ import api from '../services/api';
 
 const AuthContext = createContext();
 
+export { AuthContext };
+
 const initialState = {
   user: null,
   token: localStorage.getItem('token'),

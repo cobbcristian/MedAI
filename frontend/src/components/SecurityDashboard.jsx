@@ -30,7 +30,8 @@ import {
   Badge,
   Accordion,
   AccordionSummary,
-  AccordionDetails
+  AccordionDetails,
+  Container
 } from '@mui/material';
 import {
   Security,
@@ -49,9 +50,11 @@ import {
   Shield,
   Gavel,
   Storage,
-  History
+  History,
+  QrCode
 } from '@mui/icons-material';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
+import aiService from '../services/aiService';
 
 const SecurityDashboard = () => {
   const [hipaaCompliance, setHipaaCompliance] = useState(null);
@@ -62,6 +65,8 @@ const SecurityDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showSensitiveData, setShowSensitiveData] = useState(false);
+  const [smartcardData, setSmartcardData] = useState(null);
+  const [isGeneratingSmartcard, setIsGeneratingSmartcard] = useState(false);
 
   useEffect(() => {
     loadSecurityData();
@@ -195,6 +200,39 @@ const SecurityDashboard = () => {
     { name: 'Compliant', value: hipaaCompliance.overall_compliance, color: getComplianceColor(hipaaCompliance.overall_compliance) },
     { name: 'Non-Compliant', value: 100 - hipaaCompliance.overall_compliance, color: '#e0e0e0' }
   ] : [];
+
+  // Smartcard Generation
+  const handleGenerateSmartcard = async () => {
+    setIsGeneratingSmartcard(true);
+    try {
+      const patientInfo = {
+        name: "John Doe",
+        dob: "1980-01-01",
+        gender: "male",
+        id: "1234567890"
+      };
+      
+      const vaccineInfo = {
+        vaccine: "COVID-19 mRNA",
+        manufacturer: "Pfizer",
+        date: "2023-12-01",
+        lot: "AB1234"
+      };
+      
+      const testInfo = {
+        type: "PCR",
+        result: "negative",
+        date: "2023-12-10"
+      };
+      
+      const result = await aiService.generateSmartcard(patientInfo, vaccineInfo, testInfo);
+      setSmartcardData(result);
+    } catch (error) {
+      console.error('Error generating smartcard:', error);
+    } finally {
+      setIsGeneratingSmartcard(false);
+    }
+  };
 
   return (
     <Box sx={{ p: 3 }}>
@@ -611,6 +649,72 @@ const SecurityDashboard = () => {
             </Card>
           </Grid>
         )}
+
+        {/* Smartcard Generation Section */}
+        <Grid item xs={12}>
+          <Card>
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                🆔 Smart Health Card Generator
+              </Typography>
+              <Typography variant="body2" color="text.secondary" paragraph>
+                Generate DCC/SMART health cards for vaccine and test certificates
+              </Typography>
+              
+              <Box sx={{ mb: 3 }}>
+                <Button
+                  variant="contained"
+                  onClick={handleGenerateSmartcard}
+                  disabled={isGeneratingSmartcard}
+                  startIcon={isGeneratingSmartcard ? <CircularProgress size={20} /> : <QrCode />}
+                >
+                  {isGeneratingSmartcard ? 'Generating...' : 'Generate Health Card'}
+                </Button>
+              </Box>
+              
+              {smartcardData && (
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Generated Health Card
+                  </Typography>
+                  
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="subtitle2" gutterBottom>
+                        Card JSON:
+                      </Typography>
+                      <Paper sx={{ p: 2, bgcolor: '#f5f5f5', maxHeight: 200, overflow: 'auto' }}>
+                        <Typography variant="body2" component="pre" sx={{ fontSize: '0.75rem' }}>
+                          {smartcardData.card_json}
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                    
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="subtitle2" gutterBottom>
+                        QR Code:
+                      </Typography>
+                      <Box sx={{ textAlign: 'center' }}>
+                        <img
+                          src={`data:image/png;base64,${smartcardData.qr_code_base64}`}
+                          alt="Health Card QR Code"
+                          style={{ maxWidth: '200px', height: 'auto' }}
+                        />
+                      </Box>
+                    </Grid>
+                  </Grid>
+                  
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      This QR code contains the patient's vaccine and test information in a standardized format
+                      that can be verified by healthcare providers and border control systems.
+                    </Typography>
+                  </Box>
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
       </Grid>
     </Box>
   );

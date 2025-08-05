@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Card,
@@ -21,7 +21,9 @@ import {
   Divider,
   Paper,
   IconButton,
-  Tooltip
+  Tooltip,
+  Container,
+  ListItemIcon
 } from '@mui/material';
 import {
   Mic,
@@ -34,9 +36,11 @@ import {
   Timeline,
   Warning,
   CheckCircle,
-  Error
+  Error,
+  ArrowForward
 } from '@mui/icons-material';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+import aiService from '../services/aiService';
 
 const AdvancedAIFeatures = () => {
   const [isRecording, setIsRecording] = useState(false);
@@ -46,6 +50,9 @@ const AdvancedAIFeatures = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [audioBlob, setAudioBlob] = useState(null);
+  const [explanationResult, setExplanationResult] = useState(null);
+  const [modelInfo, setModelInfo] = useState(null);
+  const [isExplaining, setIsExplaining] = useState(false);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
 
@@ -191,6 +198,56 @@ const AdvancedAIFeatures = () => {
     }
   };
 
+  // AI Model Explainability
+  const handleExplainDiagnosis = async () => {
+    setIsExplaining(true);
+    try {
+      // Example patient data for demonstration
+      const patientData = {
+        age: 35,
+        gender: 1,
+        temperature: 101.2,
+        blood_pressure_systolic: 130,
+        blood_pressure_diastolic: 85,
+        heart_rate: 88,
+        respiratory_rate: 18,
+        oxygen_saturation: 97,
+        pain_level: 6,
+        fatigue_level: 7,
+        cough_present: 1,
+        fever_present: 1,
+        shortness_of_breath: 0,
+        chest_pain: 0,
+        headache: 1,
+        nausea: 0,
+        diarrhea: 0,
+        loss_of_appetite: 1,
+        muscle_aches: 1,
+        sore_throat: 0
+      };
+      
+      const result = await aiService.explainDiagnosis(patientData, 'lime');
+      setExplanationResult(result);
+    } catch (error) {
+      console.error('Error explaining diagnosis:', error);
+    } finally {
+      setIsExplaining(false);
+    }
+  };
+  
+  const loadModelInfo = async () => {
+    try {
+      const info = await aiService.getModelInfo();
+      setModelInfo(info);
+    } catch (error) {
+      console.error('Error loading model info:', error);
+    }
+  };
+  
+  useEffect(() => {
+    loadModelInfo();
+  }, []);
+
   const getEmotionColor = (emotion) => {
     const colors = {
       'happy': '#4caf50',
@@ -209,7 +266,7 @@ const AdvancedAIFeatures = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
         Advanced AI Features
       </Typography>
@@ -553,8 +610,127 @@ const AdvancedAIFeatures = () => {
             </CardContent>
           </Card>
         </Grid>
+
+        {/* AI Model Explainability Section */}
+        <Grid item xs={12}>
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="h5" gutterBottom>
+                🤖 AI Model Explainability
+              </Typography>
+              <Typography variant="body2" color="text.secondary" paragraph>
+                Understand how AI arrives at diagnostic decisions with LIME/SHAP explanations
+              </Typography>
+              
+              <Box sx={{ mb: 3 }}>
+                <Button
+                  variant="contained"
+                  onClick={handleExplainDiagnosis}
+                  disabled={isExplaining}
+                  startIcon={isExplaining ? <CircularProgress size={20} /> : <Psychology />}
+                >
+                  {isExplaining ? 'Explaining...' : 'Explain Diagnosis'}
+                </Button>
+              </Box>
+              
+              {modelInfo && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="h6" gutterBottom>
+                    Model Information
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="body2">
+                        <strong>Model Type:</strong> {modelInfo.model_type}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Features:</strong> {modelInfo.feature_count}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="body2">
+                        <strong>Classes:</strong> {modelInfo.class_count}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Classes:</strong> {modelInfo.classes.join(', ')}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Box>
+              )}
+              
+              {explanationResult && (
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Diagnosis Explanation
+                  </Typography>
+                  
+                  <Alert severity="info" sx={{ mb: 2 }}>
+                    <Typography variant="body1">
+                      {explanationResult.plain_language_explanation}
+                    </Typography>
+                  </Alert>
+                  
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="subtitle1" gutterBottom>
+                        Confidence: {(explanationResult.confidence_score * 100).toFixed(1)}%
+                      </Typography>
+                      
+                      <Typography variant="subtitle2" gutterBottom>
+                        Risk Factors:
+                      </Typography>
+                      <List dense>
+                        {explanationResult.risk_factors.map((factor, index) => (
+                          <ListItem key={index}>
+                            <ListItemIcon>
+                              <Warning color="warning" />
+                            </ListItemIcon>
+                            <ListItemText primary={factor} />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Grid>
+                    
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="subtitle2" gutterBottom>
+                        Recommendations:
+                      </Typography>
+                      <List dense>
+                        {explanationResult.recommendations.map((rec, index) => (
+                          <ListItem key={index}>
+                            <ListItemIcon>
+                              <CheckCircle color="success" />
+                            </ListItemIcon>
+                            <ListItemText primary={rec} />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Grid>
+                  </Grid>
+                  
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="subtitle2" gutterBottom>
+                      Decision Path:
+                    </Typography>
+                    <List dense>
+                      {explanationResult.decision_path.map((step, index) => (
+                        <ListItem key={index}>
+                          <ListItemIcon>
+                            <ArrowForward color="primary" />
+                          </ListItemIcon>
+                          <ListItemText primary={step} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Box>
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
       </Grid>
-    </Box>
+    </Container>
   );
 };
 
