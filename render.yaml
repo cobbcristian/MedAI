@@ -2,7 +2,7 @@ services:
   - type: web
     name: medai-healthcare-platform
     env: static
-    buildCommand: cd frontend && npm install && DISABLE_ESLINT_PLUGIN=true npm run build
+    buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/build
     routes:
       - type: rewrite
