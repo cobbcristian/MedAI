@@ -1,9 +1,10 @@
 services:
   - type: web
-    name: ai-telemedicine-api
-    env: python
-    buildCommand: cd ai_backend && pip install -r requirements_simple.txt
-    startCommand: cd ai_backend && python -m uvicorn main_simple:app --host 0.0.0.0 --port $PORT
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0 
+    name: medai-healthcare-platform
+    env: static
+    buildCommand: cd frontend && npm install && DISABLE_ESLINT_PLUGIN=true npm run build
+    staticPublishPath: frontend/build
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html 
