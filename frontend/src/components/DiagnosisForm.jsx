@@ -1,1 +1,0 @@
-// AI-powered symptom checker form
