@@ -34,10 +34,6 @@ import {
   Description,
 } from '@mui/icons-material';
 import { useAuth } from '../../context/AuthContext';
-import { useQuery } from 'react-query';
-import api from '../../services/api';
-import { format } from 'date-fns';
-import aiService from '../../services/aiService';
 
 function GlobalSymptomMapPlaceholder() {
   return (
@@ -46,7 +42,7 @@ function GlobalSymptomMapPlaceholder() {
         Global Symptom Heatmap (Coming Soon)
       </Typography>
       <Typography variant="body2" color="textSecondary">
-        This section will display a real-time outbreak heatmap and early warning system. (Vue component integration required)
+        This section will display a real-time outbreak heatmap and early warning system.
       </Typography>
     </Box>
   );
@@ -55,45 +51,33 @@ function GlobalSymptomMapPlaceholder() {
 const PatientDashboard = () => {
   const { user } = useAuth();
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [offlineSyncStatus, setOfflineSyncStatus] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Fetch upcoming appointments
-  const { data: appointments, isLoading: appointmentsLoading } = useQuery(
-    'patient-appointments',
-    async () => {
-      const response = await api.get('/api/appointments');
-      return response.data;
-    },
-    {
-      refetchInterval: 30000, // Refetch every 30 seconds
-    }
-  );
-
+  // Mock data for demo mode
   useEffect(() => {
-    if (appointments) {
-      setUpcomingAppointments(appointments.slice(0, 5)); // Show only next 5
-      setLoading(false);
-    }
-  }, [appointments]);
-
-  // Fetch offline sync status
-  const { data: syncStatus, isLoading: syncLoading } = useQuery(
-    'offline-sync-status',
-    async () => {
-      const response = await aiService.getOfflineSyncStatus();
-      return response;
-    },
-    {
-      refetchInterval: 30000, // Refetch every 30 seconds
-    }
-  );
-
-  useEffect(() => {
-    if (syncStatus) {
-      setOfflineSyncStatus(syncStatus);
-    }
-  }, [syncStatus]);
+    const mockAppointments = [
+      {
+        id: 1,
+        doctorName: 'Dr. Sarah Johnson',
+        specialty: 'Cardiology',
+        date: '2024-01-15',
+        time: '10:00 AM',
+        status: 'CONFIRMED',
+        type: 'IN_PERSON'
+      },
+      {
+        id: 2,
+        doctorName: 'Dr. Michael Chen',
+        specialty: 'Dermatology',
+        date: '2024-01-18',
+        time: '2:30 PM',
+        status: 'PENDING',
+        type: 'VIDEO_CALL'
+      }
+    ];
+    setUpcomingAppointments(mockAppointments);
+    setLoading(false);
+  }, []);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -103,8 +87,6 @@ const PatientDashboard = () => {
         return 'warning';
       case 'CANCELLED':
         return 'error';
-      case 'COMPLETED':
-        return 'info';
       default:
         return 'default';
     }
@@ -113,44 +95,35 @@ const PatientDashboard = () => {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'CONFIRMED':
-        return <CheckCircle />;
+        return <CheckCircle color="success" />;
       case 'PENDING':
-        return <Schedule />;
+        return <Schedule color="warning" />;
       case 'CANCELLED':
-        return <Cancel />;
-      case 'COMPLETED':
-        return <CheckCircle />;
+        return <Cancel color="error" />;
       default:
         return <Schedule />;
     }
   };
 
   function OfflineSyncStatus() {
-    if (syncLoading) {
-      return <CircularProgress size={20} />;
-    }
-
-    if (!offlineSyncStatus) {
-      return <Chip label="Online Mode" color="success" size="small" />;
-    }
-
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Chip 
-          label={offlineSyncStatus.isOnline ? "Online" : "Offline"} 
-          color={offlineSyncStatus.isOnline ? "success" : "warning"} 
-          size="small" 
-        />
-        {offlineSyncStatus.pendingSync && (
-          <Chip label={`${offlineSyncStatus.pendingSync} pending`} color="info" size="small" />
-        )}
-      </Box>
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Box display="flex" alignItems="center" mb={2}>
+            <HealthAndSafety color="primary" sx={{ mr: 1 }} />
+            <Typography variant="h6">Offline Sync Status</Typography>
+          </Box>
+          <Alert severity="info">
+            All data is synced and up to date. You can work offline.
+          </Alert>
+        </CardContent>
+      </Card>
     );
   }
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
           <CircularProgress />
         </Box>
@@ -159,150 +132,170 @@ const PatientDashboard = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Welcome back, {user?.name || 'Patient'}!
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      {/* Header */}
+      <Box mb={4}>
+        <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
+          Patient Dashboard
         </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Here's your health summary and upcoming appointments.
+        <Typography variant="h6" color="text.secondary" gutterBottom>
+          Welcome back, {user?.name || 'Patient'}! Here's your health overview.
         </Typography>
+        <Chip 
+          label="Demo Mode" 
+          color="info" 
+          icon={<HealthAndSafety />}
+          sx={{ mt: 1 }}
+        />
       </Box>
+
+      {/* Quick Actions */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ height: '100%', cursor: 'pointer' }}>
+            <CardContent>
+              <Box display="flex" alignItems="center" mb={2}>
+                <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
+                  <CalendarToday />
+                </Avatar>
+                <Typography variant="h6">Book Appointment</Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                Schedule a new consultation
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ height: '100%', cursor: 'pointer' }}>
+            <CardContent>
+              <Box display="flex" alignItems="center" mb={2}>
+                <Avatar sx={{ bgcolor: 'secondary.main', mr: 2 }}>
+                  <VideoCall />
+                </Avatar>
+                <Typography variant="h6">Video Call</Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                Start virtual consultation
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ height: '100%', cursor: 'pointer' }}>
+            <CardContent>
+              <Box display="flex" alignItems="center" mb={2}>
+                <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
+                  <Chat />
+                </Avatar>
+                <Typography variant="h6">Chat Support</Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                Get help from AI assistant
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ height: '100%', cursor: 'pointer' }}>
+            <CardContent>
+              <Box display="flex" alignItems="center" mb={2}>
+                <Avatar sx={{ bgcolor: 'warning.main', mr: 2 }}>
+                  <LocalHospital />
+                </Avatar>
+                <Typography variant="h6">Symptom Check</Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                AI-powered symptom analysis
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
       {/* Offline Sync Status */}
-      <Box sx={{ mb: 3 }}>
-        <OfflineSyncStatus />
-      </Box>
+      <OfflineSyncStatus />
 
+      {/* Upcoming Appointments */}
+      <Card sx={{ mb: 4 }}>
+        <CardContent>
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+            <Typography variant="h5" component="h2">
+              Upcoming Appointments
+            </Typography>
+            <Button variant="outlined" startIcon={<Add />}>
+              Book New
+            </Button>
+          </Box>
+
+          {upcomingAppointments.length > 0 ? (
+            <List>
+              {upcomingAppointments.map((appointment, index) => (
+                <React.Fragment key={appointment.id}>
+                  <ListItem>
+                    <ListItemAvatar>
+                      <Avatar>
+                        <Person />
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={appointment.doctorName}
+                      secondary={
+                        <Box>
+                          <Typography variant="body2" color="text.secondary">
+                            {appointment.specialty} • {appointment.date} at {appointment.time}
+                          </Typography>
+                          <Chip
+                            label={appointment.status}
+                            color={getStatusColor(appointment.status)}
+                            size="small"
+                            icon={getStatusIcon(appointment.status)}
+                            sx={{ mt: 1 }}
+                          />
+                        </Box>
+                      }
+                    />
+                    <Box>
+                      <IconButton>
+                        <VideoCall />
+                      </IconButton>
+                      <IconButton>
+                        <Chat />
+                      </IconButton>
+                    </Box>
+                  </ListItem>
+                  {index < upcomingAppointments.length - 1 && <Divider />}
+                </React.Fragment>
+              ))}
+            </List>
+          ) : (
+            <Box textAlign="center" py={4}>
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                No upcoming appointments
+              </Typography>
+              <Button variant="contained" startIcon={<Add />}>
+                Book Your First Appointment
+              </Button>
+            </Box>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Global Symptom Map */}
+      <GlobalSymptomMapPlaceholder />
+
+      {/* Health Summary */}
       <Grid container spacing={3}>
-        {/* Quick Actions */}
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Quick Actions
-              </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Button
-                  variant="contained"
-                  startIcon={<VideoCall />}
-                  fullWidth
-                >
-                  Join Video Call
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<Chat />}
-                  fullWidth
-                >
-                  Start Chat
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<LocalHospital />}
-                  fullWidth
-                >
-                  Book Appointment
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<Description />}
-                  fullWidth
-                >
-                  View Records
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Upcoming Appointments */}
-        <Grid item xs={12} md={8}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <CalendarToday color="primary" />
-                <Typography variant="h6">
-                  Upcoming Appointments
-                </Typography>
-              </Box>
-              {appointmentsLoading ? (
-                <Box display="flex" justifyContent="center" p={3}>
-                  <CircularProgress />
-                </Box>
-              ) : upcomingAppointments.length === 0 ? (
-                <Alert severity="info">
-                  No upcoming appointments. Book your next consultation!
-                </Alert>
-              ) : (
-                <List>
-                  {upcomingAppointments.map((appointment, index) => (
-                    <React.Fragment key={appointment.id || index}>
-                      <ListItem>
-                        <ListItemAvatar>
-                          <Avatar sx={{ bgcolor: `${getStatusColor(appointment.status)}.main` }}>
-                            {getStatusIcon(appointment.status)}
-                          </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText
-                          primary={`Dr. ${appointment.doctorName || 'Doctor'}`}
-                          secondary={`${format(new Date(appointment.date), 'MMM dd, yyyy')} at ${appointment.time}`}
-                        />
-                        <Chip
-                          label={appointment.status}
-                          color={getStatusColor(appointment.status)}
-                          size="small"
-                        />
-                      </ListItem>
-                      {index < upcomingAppointments.length - 1 && <Divider />}
-                    </React.Fragment>
-                  ))}
-                </List>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Health Summary */}
         <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Health Summary
+                Recent Health Events
               </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Box textAlign="center">
-                    <Typography variant="h4" color="primary">
-                      {upcomingAppointments.filter(a => a.status === 'COMPLETED').length}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Completed Consultations
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={6}>
-                  <Box textAlign="center">
-                    <Typography variant="h4" color="success.main">
-                      {upcomingAppointments.filter(a => a.status === 'CONFIRMED').length}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Upcoming Appointments
-                    </Typography>
-                  </Box>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        </Grid>
-        {/* Recent Activity */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Recent Activity
-              </Typography>
-              <List dense>
+              <List>
                 <ListItem>
                   <ListItemAvatar>
                     <Avatar sx={{ bgcolor: 'success.main' }}>
@@ -310,8 +303,8 @@ const PatientDashboard = () => {
                     </Avatar>
                   </ListItemAvatar>
                   <ListItemText
-                    primary="Appointment confirmed"
-                    secondary="Dr. Smith - Tomorrow at 2:00 PM"
+                    primary="Blood test completed"
+                    secondary="2 days ago"
                   />
                 </ListItem>
                 <ListItem>
@@ -321,44 +314,32 @@ const PatientDashboard = () => {
                     </Avatar>
                   </ListItemAvatar>
                   <ListItemText
-                    primary="Medical record uploaded"
-                    secondary="Lab results - 2 days ago"
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemAvatar>
-                    <Avatar sx={{ bgcolor: 'warning.main' }}>
-                      <HealthAndSafety />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary="Symptom check completed"
-                    secondary="Headache analysis - 3 days ago"
+                    primary="Prescription renewed"
+                    secondary="1 week ago"
                   />
                 </ListItem>
               </List>
             </CardContent>
           </Card>
         </Grid>
-        {/* Notifications */}
-        <Grid item xs={12}>
+
+        <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <Notifications color="primary" />
-                <Typography variant="h6">
-                  Notifications
+              <Typography variant="h6" gutterBottom>
+                Health Score
+              </Typography>
+              <Box display="flex" alignItems="center" mb={2}>
+                <Typography variant="h3" component="div" sx={{ fontWeight: 'bold', mr: 2 }}>
+                  92
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  / 100
                 </Typography>
               </Box>
-              <Alert severity="info" sx={{ mb: 2 }}>
-                Your appointment with Dr. Johnson is in 30 minutes. Please join the video call.
-              </Alert>
-              <Alert severity="success" sx={{ mb: 2 }}>
-                Your medical records have been updated with the latest lab results.
-              </Alert>
-              <Alert severity="warning">
-                Don't forget to complete your health questionnaire before your next appointment.
-              </Alert>
+              <Typography variant="body2" color="text.secondary">
+                Excellent health status based on recent metrics
+              </Typography>
             </CardContent>
           </Card>
         </Grid>
