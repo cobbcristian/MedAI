@@ -2,7 +2,7 @@ import api from './api';
 
 class AIService {
   constructor() {
-    this.baseURL = process.env.REACT_APP_AI_BACKEND_URL || 'http://localhost:8000';
+    this.baseURL = process.env.REACT_APP_AI_BACKEND_URL || 'https://medai-production-45a2.up.railway.app';
   }
 
   // Scan Analysis
