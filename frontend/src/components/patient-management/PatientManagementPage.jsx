@@ -1,18 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Box,
+  Container,
   Typography,
   Paper,
   Grid,
   Card,
   CardContent,
+  CardActions,
   Button,
-  IconButton,
+  Box,
   Chip,
   List,
   ListItem,
-  ListItemText,
   ListItemIcon,
+  ListItemText,
+  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -27,777 +29,644 @@ import {
   Divider,
   Tabs,
   Tab,
-  Badge,
-  Tooltip,
-  Fab,
   Avatar,
+  Badge,
+  Fab,
+  Tooltip,
+  Switch,
+  FormControlLabel,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Switch,
-  FormControlLabel,
-  Slider,
-  Radio,
-  RadioGroup,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails
+  TablePagination,
+  InputAdornment,
+  Drawer,
+  AppBar,
+  Toolbar
 } from '@mui/material';
 import {
-  People,
-  Person,
-  Add,
+  Search,
+  FilterList,
+  Sort,
+  MoreVert,
   Edit,
   Delete,
   Visibility,
-  History,
-  Security,
-  CloudUpload,
-  FileCopy,
-  Print,
-  Lock,
-  Public,
-  Verified,
-  Warning,
-  CheckCircle,
-  Error,
-  Info,
-  ExpandMore,
-  PlayArrow,
-  Stop,
-  Refresh,
-  Download,
-  Upload,
-  Settings,
-  Timeline,
-  TrendingUp,
-  TrendingDown,
-  Compare,
-  School,
-  AutoFixHigh,
-  Lightbulb,
-  Warning as WarningIcon,
-  CheckCircle as CheckCircleIcon,
-  Error as ErrorIcon,
-  Info as InfoIcon,
-  Timeline as TimelineIcon,
-  Analytics as AnalyticsIcon,
-  Psychology as PsychologyIcon,
-  Science as ScienceIcon,
-  Compare as CompareIcon,
-  School as SchoolIcon,
-  AutoFixHigh as AutoFixHighIcon,
-  Lightbulb as LightbulbIcon,
-  Phone,
-  Email,
-  LocationOn,
-  CalendarToday,
-  AccessTime,
+  Add,
+  Person,
   LocalHospital,
   Medication,
+  CalendarToday,
+  VideoCall,
+  Chat,
+  Notifications,
+  Settings,
+  CheckCircle,
+  Warning,
+  Info,
+  AccessTime,
+  LocationOn,
+  Phone,
+  Email,
+  CalendarToday as CalendarIcon,
+  Event,
+  Notifications as NotificationsIcon,
+  ConfirmationNumber,
+  Payment,
+  Receipt,
+  CameraAlt,
+  CameraEnhance,
+  CameraFront,
+  CameraRear,
+  FileCopy,
+  Download,
+  Share,
+  Reply,
+  Forward,
+  HealthAndSafety,
+  MonitorHeart,
+  Bloodtype,
+  Weight,
+  Height,
+  Favorite,
+  Speed,
+  TrendingUp,
+  TrendingDown,
+  Security,
+  Privacy,
+  Lock,
+  Shield,
+  VerifiedUser,
+  Support,
+  Help,
+  QuestionAnswer,
   Assignment,
-  Assessment
+  Description,
+  Assessment,
+  Analytics,
+  BarChart,
+  PieChart,
+  LineChart,
+  ShowChart,
+  Timeline as TimelineIcon,
+  History,
+  Schedule,
+  Alarm,
+  Timer,
+  Stop,
+  PlayArrow,
+  Pause,
+  SkipNext,
+  SkipPrevious,
+  VolumeUp,
+  VolumeOff,
+  Mic,
+  MicOff,
+  Videocam,
+  VideocamOff,
+  ScreenShare,
+  StopScreenShare,
+  RecordVoiceOver,
+  Fullscreen,
+  FullscreenExit,
+  Settings as SettingsIcon,
+  Tune,
+  Build,
+  Code,
+  BugReport,
+  Report,
+  Feedback,
+  RateReview,
+  Star,
+  StarBorder,
+  StarHalf,
+  ThumbUp,
+  ThumbDown,
+  ThumbUpOutlined,
+  ThumbDownOutlined
 } from '@mui/icons-material';
+import api from '../../services/api';
 
 const PatientManagementPage = () => {
-  const [activeTab, setActiveTab] = useState(0);
-  const [selectedPatient, setSelectedPatient] = useState(null);
-  const [addPatientDialog, setAddPatientDialog] = useState(false);
-  const [carePlanDialog, setCarePlanDialog] = useState(false);
-  const [progressDialog, setProgressDialog] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-
-  // Mock patient data
-  const [patients] = useState([
+  const [patients, setPatients] = useState([
     {
       id: 1,
-      name: 'Sarah Johnson',
-      age: 34,
-      gender: 'Female',
-      email: 'sarah.johnson@email.com',
+      name: 'John Smith',
+      age: 45,
+      gender: 'Male',
+      email: 'john.smith@email.com',
       phone: '+1 (555) 123-4567',
       status: 'active',
       lastVisit: '2024-01-15',
-      nextAppointment: '2024-01-25',
-      primaryCondition: 'Diabetes Type 2',
-      riskLevel: 'medium',
-      avatar: 'SJ',
-      carePlan: 'Diabetes Management',
-      progress: 75
+      nextAppointment: '2024-01-20',
+      doctor: 'Dr. Sarah Johnson',
+      specialty: 'Cardiology',
+      insurance: 'Blue Cross Blue Shield',
+      medicalHistory: ['Hypertension', 'Diabetes Type 2'],
+      medications: ['Lisinopril', 'Metformin'],
+      alerts: ['Blood pressure elevated', 'Medication due']
     },
     {
       id: 2,
-      name: 'Michael Chen',
-      age: 28,
-      gender: 'Male',
-      email: 'michael.chen@email.com',
+      name: 'Sarah Johnson',
+      age: 32,
+      gender: 'Female',
+      email: 'sarah.johnson@email.com',
       phone: '+1 (555) 234-5678',
       status: 'active',
-      lastVisit: '2024-01-12',
-      nextAppointment: '2024-01-30',
-      primaryCondition: 'Hypertension',
-      riskLevel: 'low',
-      avatar: 'MC',
-      carePlan: 'Blood Pressure Control',
-      progress: 90
+      lastVisit: '2024-01-10',
+      nextAppointment: '2024-01-25',
+      doctor: 'Dr. Michael Chen',
+      specialty: 'Primary Care',
+      insurance: 'Aetna',
+      medicalHistory: ['Asthma', 'Allergies'],
+      medications: ['Albuterol', 'Fluticasone'],
+      alerts: ['Asthma flare-up', 'Allergy season']
     },
     {
       id: 3,
-      name: 'Emily Davis',
-      age: 45,
-      gender: 'Female',
-      email: 'emily.davis@email.com',
-      phone: '+1 (555) 345-6789',
-      status: 'active',
-      lastVisit: '2024-01-10',
-      nextAppointment: '2024-01-28',
-      primaryCondition: 'Asthma',
-      riskLevel: 'high',
-      avatar: 'ED',
-      carePlan: 'Asthma Management',
-      progress: 60
-    },
-    {
-      id: 4,
-      name: 'Robert Wilson',
-      age: 52,
+      name: 'Michael Brown',
+      age: 58,
       gender: 'Male',
-      email: 'robert.wilson@email.com',
-      phone: '+1 (555) 456-7890',
+      email: 'michael.brown@email.com',
+      phone: '+1 (555) 345-6789',
       status: 'inactive',
       lastVisit: '2023-12-20',
       nextAppointment: null,
-      primaryCondition: 'Heart Disease',
-      riskLevel: 'high',
-      avatar: 'RW',
-      carePlan: 'Cardiac Rehabilitation',
-      progress: 40
-    },
-    {
-      id: 5,
-      name: 'Lisa Thompson',
-      age: 39,
-      gender: 'Female',
-      email: 'lisa.thompson@email.com',
-      phone: '+1 (555) 567-8901',
-      status: 'active',
-      lastVisit: '2024-01-08',
-      nextAppointment: '2024-01-22',
-      primaryCondition: 'Depression',
-      riskLevel: 'medium',
-      avatar: 'LT',
-      carePlan: 'Mental Health Support',
-      progress: 85
+      doctor: 'Dr. Emily Davis',
+      specialty: 'Neurology',
+      insurance: 'UnitedHealth',
+      medicalHistory: ['Migraine', 'Anxiety'],
+      medications: ['Sumatriptan', 'Sertraline'],
+      alerts: ['No recent visits', 'Medication review needed']
     }
   ]);
 
-  const [carePlans] = useState([
-    {
-      id: 1,
-      patientId: 1,
-      title: 'Diabetes Management',
-      type: 'Chronic Disease',
-      status: 'active',
-      startDate: '2024-01-01',
-      endDate: '2024-12-31',
-      goals: ['Blood sugar control', 'Weight management', 'Exercise routine'],
-      medications: ['Metformin', 'Insulin'],
-      progress: 75
-    },
-    {
-      id: 2,
-      patientId: 2,
-      title: 'Blood Pressure Control',
-      type: 'Preventive Care',
-      status: 'active',
-      startDate: '2024-01-01',
-      endDate: '2024-06-30',
-      goals: ['BP < 140/90', 'Salt reduction', 'Regular exercise'],
-      medications: ['Lisinopril'],
-      progress: 90
-    },
-    {
-      id: 3,
-      patientId: 3,
-      title: 'Asthma Management',
-      type: 'Respiratory',
-      status: 'active',
-      startDate: '2024-01-01',
-      endDate: '2024-12-31',
-      goals: ['Symptom control', 'Peak flow monitoring', 'Trigger avoidance'],
-      medications: ['Albuterol', 'Fluticasone'],
-      progress: 60
-    }
-  ]);
+  const [selectedTab, setSelectedTab] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [patientDialog, setPatientDialog] = useState(false);
+  const [viewDialog, setViewDialog] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
-  };
-
-  const handlePatientClick = (patient) => {
-    setSelectedPatient(patient);
-  };
-
-  const handleAddPatient = () => {
-    setAddPatientDialog(true);
-  };
-
-  const handleCarePlan = () => {
-    setCarePlanDialog(true);
-  };
-
-  const handleProgress = () => {
-    setProgressDialog(true);
-  };
+  const patientStatuses = [
+    { value: 'all', label: 'All Patients', icon: <Person /> },
+    { value: 'active', label: 'Active', icon: <CheckCircle /> },
+    { value: 'inactive', label: 'Inactive', icon: <Warning /> },
+    { value: 'new', label: 'New', icon: <Add /> },
+    { value: 'urgent', label: 'Urgent', icon: <Warning /> }
+  ];
 
   const getStatusColor = (status) => {
     switch (status) {
       case 'active': return 'success';
-      case 'inactive': return 'error';
-      case 'pending': return 'warning';
+      case 'inactive': return 'default';
+      case 'new': return 'primary';
+      case 'urgent': return 'error';
       default: return 'default';
     }
   };
 
-  const getRiskColor = (risk) => {
-    switch (risk) {
-      case 'low': return 'success';
-      case 'medium': return 'warning';
-      case 'high': return 'error';
-      default: return 'default';
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'active': return <CheckCircle />;
+      case 'inactive': return <Warning />;
+      case 'new': return <Add />;
+      case 'urgent': return <Warning />;
+      default: return <Info />;
     }
   };
 
-  const getProgressColor = (progress) => {
-    if (progress >= 80) return 'success';
-    if (progress >= 60) return 'primary';
-    if (progress >= 40) return 'warning';
-    return 'error';
+  const handleViewPatient = (patient) => {
+    setSelectedPatient(patient);
+    setViewDialog(true);
   };
 
-  const filteredPatients = patients.filter(patient =>
-    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.primaryCondition.toLowerCase().includes(searchTerm.toLowerCase())
+  const handleEditPatient = (patient) => {
+    setSelectedPatient(patient);
+    setPatientDialog(true);
+  };
+
+  const handleDeletePatient = (patientId) => {
+    setPatients(patients.filter(p => p.id !== patientId));
+  };
+
+  const filteredPatients = selectedTab === 0 
+    ? patients 
+    : patients.filter(patient => patient.status === patientStatuses[selectedTab]?.value);
+
+  const searchFilteredPatients = filteredPatients.filter(patient =>
+    patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    patient.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    patient.doctor.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
   return (
-    <Box sx={{ p: 3 }}>
+    <Container maxWidth="lg">
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+        <Typography variant="h4" component="h1">
           Patient Management
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button
-            variant="outlined"
-            startIcon={<Assessment />}
-            onClick={handleProgress}
-          >
-            Progress Reports
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={handleAddPatient}
-          >
-            Add Patient
-          </Button>
-        </Box>
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          onClick={() => setPatientDialog(true)}
+        >
+          Add Patient
+        </Button>
       </Box>
 
+      {/* Search and Filters */}
+      <Paper sx={{ p: 2, mb: 3 }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              placeholder="Search patients..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              InputProps={{
+                startAdornment: <Search />,
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button variant="outlined" startIcon={<FilterList />}>
+                Filter
+              </Button>
+              <Button variant="outlined" startIcon={<Sort />}>
+                Sort
+              </Button>
+            </Box>
+          </Grid>
+        </Grid>
+      </Paper>
+
+      {/* Tabs */}
       <Paper sx={{ mb: 3 }}>
-        <Tabs value={activeTab} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tab label={`All Patients (${patients.length})`} />
-          <Tab label="Care Plans" />
-          <Tab label="Progress Tracking" />
-          <Tab label="Analytics" />
+        <Tabs 
+          value={selectedTab} 
+          onChange={(e, newValue) => setSelectedTab(newValue)}
+          variant="scrollable"
+          scrollButtons="auto"
+        >
+          <Tab label="All Patients" />
+          {patientStatuses.slice(1).map((status) => (
+            <Tab 
+              key={status.value} 
+              label={status.label}
+              icon={status.icon}
+              iconPosition="start"
+            />
+          ))}
         </Tabs>
       </Paper>
 
-      {activeTab === 0 && (
-        <Box>
-          <TextField
-            fullWidth
-            label="Search patients..."
-            variant="outlined"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{ mb: 3 }}
-          />
-          
-          <Grid container spacing={3}>
-            {filteredPatients.map((patient) => (
-              <Grid item xs={12} md={6} lg={4} key={patient.id}>
-                <Card 
-                  sx={{ 
-                    height: '100%',
-                    cursor: 'pointer',
-                    '&:hover': { boxShadow: 4 }
-                  }}
-                  onClick={() => handlePatientClick(patient)}
-                >
-                  <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Avatar sx={{ bgcolor: 'primary.main' }}>
-                          {patient.avatar}
-                        </Avatar>
-                        <Box>
-                          <Typography variant="h6" component="h3">
-                            {patient.name}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {patient.age} years • {patient.gender}
-                          </Typography>
-                        </Box>
+      {/* Patients Table */}
+      <Paper>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Patient</TableCell>
+                <TableCell>Contact</TableCell>
+                <TableCell>Doctor</TableCell>
+                <TableCell>Last Visit</TableCell>
+                <TableCell>Next Appointment</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {searchFilteredPatients
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((patient) => (
+                <TableRow key={patient.id}>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Avatar sx={{ mr: 2 }}>
+                        {patient.name.split(' ').map(n => n[0]).join('')}
+                      </Avatar>
+                      <Box>
+                        <Typography variant="subtitle2">{patient.name}</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {patient.age} years, {patient.gender}
+                        </Typography>
                       </Box>
-                      <Chip 
-                        label={patient.status} 
-                        size="small" 
-                        color={getStatusColor(patient.status)}
-                      />
                     </Box>
-
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        <Email fontSize="small" sx={{ mr: 1, verticalAlign: 'middle' }} />
-                        {patient.email}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        <Phone fontSize="small" sx={{ mr: 1, verticalAlign: 'middle' }} />
+                  </TableCell>
+                  <TableCell>
+                    <Box>
+                      <Typography variant="body2">{patient.email}</Typography>
+                      <Typography variant="caption" color="text.secondary">
                         {patient.phone}
                       </Typography>
                     </Box>
-
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        {patient.primaryCondition}
-                      </Typography>
-                      <Chip 
-                        label={patient.riskLevel} 
-                        size="small" 
-                        color={getRiskColor(patient.riskLevel)}
-                      />
-                    </Box>
-
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Care Plan Progress
-                      </Typography>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={patient.progress} 
-                        color={getProgressColor(patient.progress)}
-                        sx={{ height: 8, borderRadius: 4 }}
-                      />
+                  </TableCell>
+                  <TableCell>
+                    <Box>
+                      <Typography variant="body2">{patient.doctor}</Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {patient.progress}% complete
+                        {patient.specialty}
                       </Typography>
                     </Box>
-
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="caption" color="text.secondary">
-                        Next: {patient.nextAppointment || 'No appointment'}
-                      </Typography>
-                      <Box sx={{ display: 'flex', gap: 1 }}>
-                        <IconButton size="small">
-                          <Visibility fontSize="small" />
-                        </IconButton>
-                        <IconButton size="small">
-                          <Edit fontSize="small" />
-                        </IconButton>
-                        <IconButton size="small">
-                          <Assignment fontSize="small" />
-                        </IconButton>
-                      </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-      )}
-
-      {activeTab === 1 && (
-        <Box>
-          <Typography variant="h6" gutterBottom>Care Plans</Typography>
-          <Grid container spacing={3}>
-            {carePlans.map((plan) => (
-              <Grid item xs={12} md={6} key={plan.id}>
-                <Card>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                      <Typography variant="h6">{plan.title}</Typography>
-                      <Chip label={plan.status} size="small" color={getStatusColor(plan.status)} />
-                    </Box>
-                    
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Type: {plan.type}
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {patient.lastVisit ? new Date(patient.lastVisit).toLocaleDateString() : 'N/A'}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Duration: {plan.startDate} - {plan.endDate}
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {patient.nextAppointment ? new Date(patient.nextAppointment).toLocaleDateString() : 'N/A'}
                     </Typography>
-                    
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Goals:
-                      </Typography>
-                      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                        {plan.goals.map((goal) => (
-                          <Chip key={goal} label={goal} size="small" variant="outlined" />
-                        ))}
-                      </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      icon={getStatusIcon(patient.status)}
+                      label={patient.status}
+                      color={getStatusColor(patient.status)}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <IconButton size="small" onClick={() => handleViewPatient(patient)}>
+                        <Visibility />
+                      </IconButton>
+                      <IconButton size="small" onClick={() => handleEditPatient(patient)}>
+                        <Edit />
+                      </IconButton>
+                      <IconButton size="small" onClick={() => handleDeletePatient(patient.id)}>
+                        <Delete />
+                      </IconButton>
                     </Box>
-
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Medications:
-                      </Typography>
-                      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                        {plan.medications.map((med) => (
-                          <Chip key={med} label={med} size="small" color="primary" />
-                        ))}
-                      </Box>
-                    </Box>
-
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Box>
-                        <Typography variant="body2" color="text.secondary">
-                          Progress
-                        </Typography>
-                        <LinearProgress 
-                          variant="determinate" 
-                          value={plan.progress} 
-                          color={getProgressColor(plan.progress)}
-                          sx={{ width: 100, height: 6 }}
-                        />
-                      </Box>
-                      <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Button size="small" variant="outlined">Edit</Button>
-                        <Button size="small" variant="outlined">View</Button>
-                      </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-      )}
-
-      {activeTab === 2 && (
-        <Box>
-          <Typography variant="h6" gutterBottom>Progress Tracking</Typography>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={8}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>Patient Progress Overview</Typography>
-                  <TableContainer>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>Patient</TableCell>
-                          <TableCell>Care Plan</TableCell>
-                          <TableCell>Progress</TableCell>
-                          <TableCell>Last Update</TableCell>
-                          <TableCell>Actions</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {patients.slice(0, 5).map((patient) => (
-                          <TableRow key={patient.id}>
-                            <TableCell>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Avatar sx={{ width: 32, height: 32 }}>
-                                  {patient.avatar}
-                                </Avatar>
-                                <Box>
-                                  <Typography variant="body2">{patient.name}</Typography>
-                                  <Typography variant="caption" color="text.secondary">
-                                    {patient.primaryCondition}
-                                  </Typography>
-                                </Box>
-                              </Box>
-                            </TableCell>
-                            <TableCell>{patient.carePlan}</TableCell>
-                            <TableCell>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <LinearProgress 
-                                  variant="determinate" 
-                                  value={patient.progress} 
-                                  color={getProgressColor(patient.progress)}
-                                  sx={{ width: 60, height: 6 }}
-                                />
-                                <Typography variant="body2">{patient.progress}%</Typography>
-                              </Box>
-                            </TableCell>
-                            <TableCell>{patient.lastVisit}</TableCell>
-                            <TableCell>
-                              <Box sx={{ display: 'flex', gap: 1 }}>
-                                <IconButton size="small">
-                                  <Visibility fontSize="small" />
-                                </IconButton>
-                                <IconButton size="small">
-                                  <Edit fontSize="small" />
-                                </IconButton>
-                              </Box>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>Quick Stats</Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        Active Patients
-                      </Typography>
-                      <Typography variant="h4" color="primary">
-                        {patients.filter(p => p.status === 'active').length}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        Average Progress
-                      </Typography>
-                      <Typography variant="h4" color="success.main">
-                        {Math.round(patients.reduce((acc, p) => acc + p.progress, 0) / patients.length)}%
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        High Risk Patients
-                      </Typography>
-                      <Typography variant="h4" color="error.main">
-                        {patients.filter(p => p.riskLevel === 'high').length}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </Box>
-      )}
-
-      {activeTab === 3 && (
-        <Box>
-          <Typography variant="h6" gutterBottom>Patient Analytics</Typography>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>Risk Distribution</Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">Low Risk</Typography>
-                      <Chip label={patients.filter(p => p.riskLevel === 'low').length} color="success" />
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">Medium Risk</Typography>
-                      <Chip label={patients.filter(p => p.riskLevel === 'medium').length} color="warning" />
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">High Risk</Typography>
-                      <Chip label={patients.filter(p => p.riskLevel === 'high').length} color="error" />
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>Progress Distribution</Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">Excellent (80%+)</Typography>
-                      <Chip label={patients.filter(p => p.progress >= 80).length} color="success" />
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">Good (60-79%)</Typography>
-                      <Chip label={patients.filter(p => p.progress >= 60 && p.progress < 80).length} color="primary" />
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">Needs Attention (&lt;60%)</Typography>
-                      <Chip label={patients.filter(p => p.progress < 60).length} color="warning" />
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </Box>
-      )}
-
-      {/* Add Patient Dialog */}
-      <Dialog open={addPatientDialog} onClose={() => setAddPatientDialog(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Add New Patient</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12} md={6}>
-              <TextField fullWidth label="First Name" />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField fullWidth label="Last Name" />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField fullWidth label="Email" type="email" />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField fullWidth label="Phone" />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField fullWidth label="Age" type="number" />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth>
-                <InputLabel>Gender</InputLabel>
-                <Select label="Gender">
-                  <MenuItem value="male">Male</MenuItem>
-                  <MenuItem value="female">Female</MenuItem>
-                  <MenuItem value="other">Other</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField fullWidth label="Primary Condition" />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth>
-                <InputLabel>Risk Level</InputLabel>
-                <Select label="Risk Level">
-                  <MenuItem value="low">Low</MenuItem>
-                  <MenuItem value="medium">Medium</MenuItem>
-                  <MenuItem value="high">High</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField fullWidth label="Initial Care Plan" />
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAddPatientDialog(false)}>Cancel</Button>
-          <Button variant="contained">Add Patient</Button>
-        </DialogActions>
-      </Dialog>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={searchFilteredPatients.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+      </Paper>
 
       {/* Patient Details Dialog */}
-      <Dialog open={!!selectedPatient} onClose={() => setSelectedPatient(null)} maxWidth="lg" fullWidth>
+      <Dialog open={viewDialog} onClose={() => setViewDialog(false)} maxWidth="md" fullWidth>
         {selectedPatient && (
           <>
             <DialogTitle>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Avatar sx={{ width: 48, height: 48 }}>
-                    {selectedPatient.avatar}
-                  </Avatar>
-                  <Box>
-                    <Typography variant="h5">{selectedPatient.name}</Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {selectedPatient.age} years • {selectedPatient.gender}
-                    </Typography>
-                  </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Avatar sx={{ mr: 2 }}>
+                  {selectedPatient.name.split(' ').map(n => n[0]).join('')}
+                </Avatar>
+                <Box>
+                  <Typography variant="h6">{selectedPatient.name}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Patient ID: {selectedPatient.id}
+                  </Typography>
                 </Box>
-                <Chip label={selectedPatient.status} color={getStatusColor(selectedPatient.status)} />
               </Box>
             </DialogTitle>
             <DialogContent>
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="h6" gutterBottom>Contact Information</Typography>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      <Email fontSize="small" sx={{ mr: 1, verticalAlign: 'middle' }} />
-                      {selectedPatient.email}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      <Phone fontSize="small" sx={{ mr: 1, verticalAlign: 'middle' }} />
-                      {selectedPatient.phone}
-                    </Typography>
-                  </Box>
-
-                  <Typography variant="h6" gutterBottom>Medical Information</Typography>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Primary Condition: {selectedPatient.primaryCondition}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Risk Level: 
-                      <Chip 
-                        label={selectedPatient.riskLevel} 
-                        size="small" 
-                        color={getRiskColor(selectedPatient.riskLevel)}
-                        sx={{ ml: 1 }}
+                  <Typography variant="h6" gutterBottom>Personal Information</Typography>
+                  <List dense>
+                    <ListItem>
+                      <ListItemIcon>
+                        <Person />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Age & Gender" 
+                        secondary={`${selectedPatient.age} years, ${selectedPatient.gender}`} 
                       />
-                    </Typography>
-                  </Box>
-
-                  <Typography variant="h6" gutterBottom>Appointments</Typography>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Last Visit: {selectedPatient.lastVisit}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Next Appointment: {selectedPatient.nextAppointment || 'Not scheduled'}
-                    </Typography>
-                  </Box>
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <Email />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Email" 
+                        secondary={selectedPatient.email} 
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <Phone />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Phone" 
+                        secondary={selectedPatient.phone} 
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <LocalHospital />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Insurance" 
+                        secondary={selectedPatient.insurance} 
+                      />
+                    </ListItem>
+                  </List>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="h6" gutterBottom>Care Plan Progress</Typography>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      {selectedPatient.carePlan}
-                    </Typography>
-                    <LinearProgress 
-                      variant="determinate" 
-                      value={selectedPatient.progress} 
-                      color={getProgressColor(selectedPatient.progress)}
-                      sx={{ height: 10, borderRadius: 5, mb: 1 }}
-                    />
-                    <Typography variant="body2" color="text.secondary">
-                      {selectedPatient.progress}% complete
-                    </Typography>
+                  <Typography variant="h6" gutterBottom>Medical Information</Typography>
+                  <List dense>
+                    <ListItem>
+                      <ListItemIcon>
+                        <Person />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Primary Doctor" 
+                        secondary={selectedPatient.doctor} 
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <LocalHospital />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Specialty" 
+                        secondary={selectedPatient.specialty} 
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <CalendarToday />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Last Visit" 
+                        secondary={selectedPatient.lastVisit ? new Date(selectedPatient.lastVisit).toLocaleDateString() : 'N/A'} 
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <Event />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Next Appointment" 
+                        secondary={selectedPatient.nextAppointment ? new Date(selectedPatient.nextAppointment).toLocaleDateString() : 'N/A'} 
+                      />
+                    </ListItem>
+                  </List>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="h6" gutterBottom>Medical History</Typography>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {selectedPatient.medicalHistory.map((condition, index) => (
+                      <Chip key={index} label={condition} variant="outlined" />
+                    ))}
                   </Box>
-
-                  <Typography variant="h6" gutterBottom>Quick Actions</Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Button variant="outlined" startIcon={<Assignment />}>
-                      View Care Plan
-                    </Button>
-                    <Button variant="outlined" startIcon={<CalendarToday />}>
-                      Schedule Appointment
-                    </Button>
-                    <Button variant="outlined" startIcon={<Assessment />}>
-                      View Progress
-                    </Button>
-                    <Button variant="outlined" startIcon={<Edit />}>
-                      Edit Patient Info
-                    </Button>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="h6" gutterBottom>Current Medications</Typography>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {selectedPatient.medications.map((medication, index) => (
+                      <Chip key={index} label={medication} color="primary" />
+                    ))}
+                  </Box>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="h6" gutterBottom>Alerts</Typography>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {selectedPatient.alerts.map((alert, index) => (
+                      <Chip key={index} label={alert} color="warning" />
+                    ))}
                   </Box>
                 </Grid>
               </Grid>
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => setSelectedPatient(null)}>Close</Button>
+              <Button onClick={() => setViewDialog(false)}>Close</Button>
+              <Button variant="outlined" onClick={() => handleEditPatient(selectedPatient)}>
+                Edit Patient
+              </Button>
             </DialogActions>
           </>
         )}
       </Dialog>
-    </Box>
+
+      {/* Add/Edit Patient Dialog */}
+      <Dialog open={patientDialog} onClose={() => setPatientDialog(false)} maxWidth="md" fullWidth>
+        <DialogTitle>
+          {selectedPatient ? 'Edit Patient' : 'Add New Patient'}
+        </DialogTitle>
+        <DialogContent>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6" gutterBottom>Personal Information</Typography>
+              
+              <TextField
+                fullWidth
+                label="Full Name"
+                defaultValue={selectedPatient?.name || ''}
+                sx={{ mb: 2 }}
+              />
+
+              <TextField
+                fullWidth
+                label="Age"
+                type="number"
+                defaultValue={selectedPatient?.age || ''}
+                sx={{ mb: 2 }}
+              />
+
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Gender</InputLabel>
+                <Select label="Gender" defaultValue={selectedPatient?.gender || ''}>
+                  <MenuItem value="Male">Male</MenuItem>
+                  <MenuItem value="Female">Female</MenuItem>
+                  <MenuItem value="Other">Other</MenuItem>
+                </Select>
+              </FormControl>
+
+              <TextField
+                fullWidth
+                label="Email"
+                type="email"
+                defaultValue={selectedPatient?.email || ''}
+                sx={{ mb: 2 }}
+              />
+
+              <TextField
+                fullWidth
+                label="Phone"
+                defaultValue={selectedPatient?.phone || ''}
+                sx={{ mb: 2 }}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6" gutterBottom>Medical Information</Typography>
+              
+              <TextField
+                fullWidth
+                label="Primary Doctor"
+                defaultValue={selectedPatient?.doctor || ''}
+                sx={{ mb: 2 }}
+              />
+
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Specialty</InputLabel>
+                <Select label="Specialty" defaultValue={selectedPatient?.specialty || ''}>
+                  <MenuItem value="Primary Care">Primary Care</MenuItem>
+                  <MenuItem value="Cardiology">Cardiology</MenuItem>
+                  <MenuItem value="Neurology">Neurology</MenuItem>
+                  <MenuItem value="Dermatology">Dermatology</MenuItem>
+                  <MenuItem value="Pediatrics">Pediatrics</MenuItem>
+                </Select>
+              </FormControl>
+
+              <TextField
+                fullWidth
+                label="Insurance"
+                defaultValue={selectedPatient?.insurance || ''}
+                sx={{ mb: 2 }}
+              />
+
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Status</InputLabel>
+                <Select label="Status" defaultValue={selectedPatient?.status || 'active'}>
+                  <MenuItem value="active">Active</MenuItem>
+                  <MenuItem value="inactive">Inactive</MenuItem>
+                  <MenuItem value="new">New</MenuItem>
+                  <MenuItem value="urgent">Urgent</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPatientDialog(false)}>Cancel</Button>
+          <Button variant="contained">
+            {selectedPatient ? 'Update Patient' : 'Add Patient'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
 };
 

@@ -1,18 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Box,
+  Container,
   Typography,
   Paper,
   Grid,
   Card,
   CardContent,
+  CardActions,
   Button,
-  IconButton,
+  Box,
   Chip,
   List,
   ListItem,
-  ListItemText,
   ListItemIcon,
+  ListItemText,
+  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -27,772 +29,903 @@ import {
   Divider,
   Tabs,
   Tab,
-  Badge,
-  Tooltip,
-  Fab,
   Avatar,
+  Badge,
+  Fab,
+  Tooltip,
+  Switch,
+  FormControlLabel,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Switch,
-  FormControlLabel,
-  Slider,
-  Radio,
-  RadioGroup,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails
+  TablePagination,
+  InputAdornment,
+  Drawer,
+  AppBar,
+  Toolbar
 } from '@mui/material';
 import {
-  Security,
-  Lock,
-  Public,
-  Verified,
-  Warning,
-  CheckCircle,
-  Error,
-  Info,
-  ExpandMore,
-  PlayArrow,
-  Stop,
-  Refresh,
-  Download,
-  Upload,
-  Settings,
-  Visibility,
+  Search,
+  FilterList,
+  Sort,
+  MoreVert,
   Edit,
   Delete,
+  Visibility,
   Add,
-  History,
-  CloudUpload,
-  FileCopy,
-  Print,
-  Warning as WarningIcon,
-  CheckCircle as CheckCircleIcon,
-  Error as ErrorIcon,
-  Info as InfoIcon,
-  Timeline as TimelineIcon,
-  Analytics as AnalyticsIcon,
-  Psychology as PsychologyIcon,
-  Science as ScienceIcon,
-  Compare as CompareIcon,
-  School as SchoolIcon,
-  AutoFixHigh as AutoFixHighIcon,
-  Lightbulb as LightbulbIcon,
-  People,
+  Person,
   LocalHospital,
   Medication,
-  Assignment,
+  CalendarToday,
+  VideoCall,
+  Chat,
+  Notifications,
+  Settings,
+  CheckCircle,
+  Warning,
+  Info,
+  AccessTime,
+  LocationOn,
+  Phone,
+  Email,
+  CalendarToday as CalendarIcon,
+  Event,
+  Notifications as NotificationsIcon,
+  ConfirmationNumber,
+  Payment,
+  Receipt,
+  CameraAlt,
+  CameraEnhance,
+  CameraFront,
+  CameraRear,
+  FileCopy,
+  Download,
+  Share,
+  Reply,
+  Forward,
+  HealthAndSafety,
+  MonitorHeart,
+  Bloodtype,
+  Weight,
+  Height,
+  Favorite,
+  Speed,
+  TrendingUp,
+  TrendingDown,
+  Security,
+  Privacy,
+  Lock,
   Shield,
-  Key,
-  Fingerprint,
-  VpnKey,
-  Security as SecurityIcon,
-  PrivacyTip,
-  GppGood,
-  AdminPanelSettings,
-  Person,
-  Group,
+  VerifiedUser,
+  Support,
+  Help,
+  QuestionAnswer,
+  Assignment,
+  Description,
+  Assessment,
+  Analytics,
+  BarChart,
+  PieChart,
+  LineChart,
+  ShowChart,
+  Timeline as TimelineIcon,
+  History,
+  Schedule,
+  Alarm,
+  Timer,
+  Stop,
+  PlayArrow,
+  Pause,
+  SkipNext,
+  SkipPrevious,
+  VolumeUp,
+  VolumeOff,
+  Mic,
+  MicOff,
+  Videocam,
+  VideocamOff,
+  ScreenShare,
+  StopScreenShare,
+  RecordVoiceOver,
+  Fullscreen,
+  FullscreenExit,
+  Settings as SettingsIcon,
+  Tune,
+  Build,
+  Code,
+  BugReport,
+  Report,
+  Feedback,
+  RateReview,
+  Star,
+  StarBorder,
+  StarHalf,
+  ThumbUp,
+  ThumbDown,
+  ThumbUpOutlined,
+  ThumbDownOutlined,
+  FavoriteBorder,
+  Bookmark,
+  BookmarkBorder,
+  Flag,
+  FlagOutlined,
   Block,
-  Check,
-  Close
+  BlockOutlined,
+  Report as ReportIcon,
+  ReportOutlined,
+  Archive,
+  ArchiveOutlined,
+  Delete as DeleteIcon,
+  DeleteOutlined,
+  Restore,
+  RestoreFromTrash,
+  Undo,
+  Redo,
+  Refresh,
+  Sync,
+  CloudUpload,
+  CloudDownload,
+  CloudSync,
+  Backup,
+  Save,
+  SaveAlt,
+  Print,
+  Share as ShareIcon,
+  ShareOutlined,
+  Link,
+  LinkOff,
+  ContentCopy,
+  ContentPaste,
+  Cut,
+  SelectAll,
+  FindInPage,
+  FindReplace,
+  ZoomIn,
+  ZoomOut,
+  Fullscreen as FullscreenIcon,
+  FullscreenExit as FullscreenExitIcon,
+  OpenInNew,
+  OpenInBrowser,
+  Launch,
+  ExitToApp,
+  Logout,
+  Login,
+  PersonAdd,
+  PersonRemove,
+  Group,
+  GroupAdd,
+  GroupRemove,
+  SupervisorAccount,
+  AdminPanelSettings,
+  Security as SecurityIcon,
+  VpnKey,
+  Lock as LockIcon,
+  LockOpen,
+  LockOutline,
+  LockPerson,
+  LockReset,
+  Password,
+  Key,
+  KeyOff,
+  Visibility as VisibilityIcon,
+  VisibilityOff,
+  VerifiedUser as VerifiedUserIcon,
+  VerifiedUserOutlined,
+  Badge as BadgeIcon,
+  BadgeOutlined,
+  CardMembership,
+  CardGiftcard,
+  CardTravel,
+  CreditCard,
+  CreditCardOff,
+  CreditScore,
+  AccountBalance,
+  AccountBalanceWallet,
+  AccountBox,
+  AccountCircle,
+  AccountTree,
+  AccountTreeOutlined,
+  Business,
+  BusinessCenter,
+  BusinessCenterOutlined,
+  CorporateFare,
+  CorporateFareOutlined,
+  Domain,
+  DomainDisabled,
+  DomainVerification,
+  Home,
+  HomeOutlined,
+  HomeWork,
+  HomeWorkOutlined,
+  House,
+  HouseOutlined,
+  LocationCity,
+  LocationCityOutlined,
+  LocationOff,
+  LocationOn as LocationOnIcon,
+  LocationOnOutlined,
+  MyLocation,
+  Navigation,
+  NavigationOutlined,
+  NearMe,
+  NearMeOutlined,
+  Place,
+  PlaceOutlined,
+  Room,
+  RoomOutlined,
+  Satellite,
+  SatelliteAlt,
+  SatelliteAltOutlined,
+  SatelliteOutlined,
+  Streetview,
+  StreetviewOutlined,
+  Terrain,
+  TerrainOutlined,
+  Traffic,
+  TrafficOutlined,
+  Train,
+  TrainOutlined,
+  Tram,
+  TramOutlined,
+  Directions,
+  DirectionsBike,
+  DirectionsBikeOutlined,
+  DirectionsBoat,
+  DirectionsBoatOutlined,
+  DirectionsBus,
+  DirectionsBusOutlined,
+  DirectionsCar,
+  DirectionsCarOutlined,
+  DirectionsOff,
+  DirectionsOffOutlined,
+  DirectionsRailway,
+  DirectionsRailwayOutlined,
+  DirectionsRun,
+  DirectionsRunOutlined,
+  DirectionsSubway,
+  DirectionsSubwayOutlined,
+  DirectionsTransit,
+  DirectionsTransitOutlined,
+  DirectionsWalk,
+  DirectionsWalkOutlined,
+  Flight,
+  FlightLand,
+  FlightTakeoff,
+  FlightOutlined,
+  FlightLandOutlined,
+  FlightTakeoffOutlined,
+  Hotel,
+  HotelOutlined,
+  LocalAirport,
+  LocalAirportOutlined,
+  LocalAtm,
+  LocalAtmOutlined,
+  LocalBar,
+  LocalBarOutlined,
+  LocalCafe,
+  LocalCafeOutlined,
+  LocalCarWash,
+  LocalCarWashOutlined,
+  LocalConvenienceStore,
+  LocalConvenienceStoreOutlined,
+  LocalDining,
+  LocalDiningOutlined,
+  LocalDrink,
+  LocalDrinkOutlined,
+  LocalFlorist,
+  LocalFloristOutlined,
+  LocalGasStation,
+  LocalGasStationOutlined,
+  LocalGroceryStore,
+  LocalGroceryStoreOutlined,
+  LocalHospital as LocalHospitalIcon,
+  LocalHospitalOutlined,
+  LocalHotel,
+  LocalHotelOutlined,
+  LocalLaundryService,
+  LocalLaundryServiceOutlined,
+  LocalLibrary,
+  LocalLibraryOutlined,
+  LocalMall,
+  LocalMallOutlined,
+  LocalMovies,
+  LocalMoviesOutlined,
+  LocalOffer,
+  LocalOfferOutlined,
+  LocalParking,
+  LocalParkingOutlined,
+  LocalPharmacy,
+  LocalPharmacyOutlined,
+  LocalPizza,
+  LocalPizzaOutlined,
+  LocalPlay,
+  LocalPlayOutlined,
+  LocalPostOffice,
+  LocalPostOfficeOutlined,
+  LocalPrintshop,
+  LocalPrintshopOutlined,
+  LocalSee,
+  LocalSeeOutlined,
+  LocalShipping,
+  LocalShippingOutlined,
+  LocalTaxi,
+  LocalTaxiOutlined,
+  LocalTheater,
+  LocalTheaterOutlined
 } from '@mui/icons-material';
+import api from '../../services/api';
 
 const SecurityPrivacyPage = () => {
-  const [activeTab, setActiveTab] = useState(0);
-  const [selectedSecurity, setSelectedSecurity] = useState(null);
-  const [encryptionDialog, setEncryptionDialog] = useState(false);
-  const [accessDialog, setAccessDialog] = useState(false);
-  const [auditDialog, setAuditDialog] = useState(false);
+  const [securitySettings, setSecuritySettings] = useState({
+    twoFactorAuth: true,
+    biometricAuth: false,
+    sessionTimeout: 30,
+    passwordPolicy: 'strong',
+    encryptionLevel: 'high',
+    auditLogging: true,
+    dataRetention: 7,
+    autoLogout: true,
+    ipWhitelist: false,
+    deviceManagement: true
+  });
 
-  // Mock security data
-  const [securitySettings] = useState([
+  const [privacySettings, setPrivacySettings] = useState({
+    dataSharing: false,
+    marketingEmails: false,
+    researchParticipation: true,
+    thirdPartyAccess: false,
+    anonymizedData: true,
+    dataPortability: true,
+    rightToDelete: true,
+    consentManagement: true
+  });
+
+  const [complianceStatus, setComplianceStatus] = useState([
     {
       id: 1,
-      name: 'Data Encryption',
-      status: 'enabled',
-      level: 'AES-256',
-      description: 'End-to-end encryption for all data',
-      lastUpdated: '2024-01-15',
-      compliance: 'HIPAA',
-      icon: <Lock color="success" />
+      standard: 'HIPAA',
+      status: 'compliant',
+      lastAudit: '2024-01-15',
+      nextAudit: '2024-07-15',
+      score: 95
     },
     {
       id: 2,
-      name: 'Access Control',
-      status: 'enabled',
-      level: 'Role-based',
-      description: 'Manage who can access your information',
-      lastUpdated: '2024-01-14',
-      compliance: 'GDPR',
-      icon: <Shield color="primary" />
+      standard: 'GDPR',
+      status: 'compliant',
+      lastAudit: '2024-01-10',
+      nextAudit: '2024-07-10',
+      score: 92
     },
     {
       id: 3,
-      name: 'Audit Logs',
-      status: 'enabled',
-      level: 'Comprehensive',
-      description: 'Track all access to your health data',
-      lastUpdated: '2024-01-13',
-      compliance: 'HIPAA',
-      icon: <History color="info" />
-    },
-    {
-      id: 4,
-      name: 'Two-Factor Authentication',
-      status: 'enabled',
-      level: 'SMS + App',
-      description: 'Additional security layer for account access',
-      lastUpdated: '2024-01-12',
-      compliance: 'GDPR',
-      icon: <Fingerprint color="warning" />
-    },
-    {
-      id: 5,
-      name: 'Data Backup',
-      status: 'enabled',
-      level: 'Real-time',
-      description: 'Automatic backup with encryption',
-      lastUpdated: '2024-01-11',
-      compliance: 'HIPAA',
-      icon: <CloudUpload color="success" />
-    },
-    {
-      id: 6,
-      name: 'Privacy Controls',
-      status: 'enabled',
-      level: 'Granular',
-      description: 'Control data sharing and visibility',
-      lastUpdated: '2024-01-10',
-      compliance: 'GDPR',
-      icon: <PrivacyTip color="info" />
+      standard: 'SOC 2',
+      status: 'in-progress',
+      lastAudit: '2023-12-20',
+      nextAudit: '2024-06-20',
+      score: 78
     }
   ]);
 
-  const [auditLogs] = useState([
+  const [securityEvents, setSecurityEvents] = useState([
     {
       id: 1,
-      action: 'Login',
-      user: 'Dr. Sarah Johnson',
-      timestamp: '2024-01-15 14:30:22',
+      type: 'login',
+      user: 'john.smith@email.com',
       ip: '192.168.1.100',
+      location: 'New York, NY',
+      timestamp: '2024-01-20 14:30:00',
       status: 'success',
-      details: 'Successful login from authorized device'
+      risk: 'low'
     },
     {
       id: 2,
-      action: 'View Medical Records',
-      user: 'Dr. Michael Chen',
-      timestamp: '2024-01-15 13:45:18',
-      ip: '192.168.1.101',
-      status: 'success',
-      details: 'Accessed patient records for consultation'
-    },
-    {
-      id: 3,
-      action: 'Export Data',
-      user: 'Admin User',
-      timestamp: '2024-01-15 12:20:45',
-      ip: '192.168.1.102',
-      status: 'success',
-      details: 'Exported patient data for backup'
-    },
-    {
-      id: 4,
-      action: 'Failed Login',
-      user: 'Unknown',
-      timestamp: '2024-01-15 11:15:33',
+      type: 'failed_login',
+      user: 'unknown@email.com',
       ip: '203.45.67.89',
-      status: 'failed',
-      details: 'Multiple failed login attempts'
-    },
-    {
-      id: 5,
-      action: 'Update Settings',
-      user: 'Dr. Emily Davis',
-      timestamp: '2024-01-15 10:30:12',
-      ip: '192.168.1.103',
-      status: 'success',
-      details: 'Updated privacy settings'
-    }
-  ]);
-
-  const [accessControl] = useState([
-    {
-      id: 1,
-      user: 'Dr. Sarah Johnson',
-      role: 'Primary Care Physician',
-      permissions: ['View Records', 'Edit Records', 'Export Data'],
-      status: 'active',
-      lastAccess: '2024-01-15 14:30:22'
-    },
-    {
-      id: 2,
-      user: 'Dr. Michael Chen',
-      role: 'Specialist',
-      permissions: ['View Records', 'Edit Records'],
-      status: 'active',
-      lastAccess: '2024-01-15 13:45:18'
+      location: 'Unknown',
+      timestamp: '2024-01-20 13:45:00',
+      status: 'blocked',
+      risk: 'high'
     },
     {
       id: 3,
-      user: 'Nurse Lisa Thompson',
-      role: 'Nurse',
-      permissions: ['View Records'],
-      status: 'active',
-      lastAccess: '2024-01-15 12:20:45'
-    },
-    {
-      id: 4,
-      user: 'Admin User',
-      role: 'System Administrator',
-      permissions: ['Full Access'],
-      status: 'active',
-      lastAccess: '2024-01-15 10:30:12'
+      type: 'data_access',
+      user: 'dr.sarah@clinic.com',
+      ip: '192.168.1.50',
+      location: 'New York, NY',
+      timestamp: '2024-01-20 12:15:00',
+      status: 'success',
+      risk: 'medium'
     }
   ]);
 
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
-  };
-
-  const handleSecurityClick = (security) => {
-    setSelectedSecurity(security);
-  };
-
-  const handleEncryption = () => {
-    setEncryptionDialog(true);
-  };
-
-  const handleAccessControl = () => {
-    setAccessDialog(true);
-  };
-
-  const handleAuditLogs = () => {
-    setAuditDialog(true);
-  };
+  const [selectedTab, setSelectedTab] = useState(0);
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'enabled': return 'success';
-      case 'disabled': return 'error';
-      case 'active': return 'success';
-      case 'inactive': return 'error';
+      case 'compliant': return 'success';
+      case 'in-progress': return 'warning';
+      case 'non-compliant': return 'error';
       case 'success': return 'success';
-      case 'failed': return 'error';
+      case 'blocked': return 'error';
       default: return 'default';
     }
   };
 
-  const getComplianceColor = (compliance) => {
-    switch (compliance) {
-      case 'HIPAA': return 'primary';
-      case 'GDPR': return 'secondary';
-      case 'Both': return 'success';
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'compliant': return <CheckCircle />;
+      case 'in-progress': return <Warning />;
+      case 'non-compliant': return <Warning />;
+      case 'success': return <CheckCircle />;
+      case 'blocked': return <Block />;
+      default: return <Info />;
+    }
+  };
+
+  const getRiskColor = (risk) => {
+    switch (risk) {
+      case 'low': return 'success';
+      case 'medium': return 'warning';
+      case 'high': return 'error';
       default: return 'default';
     }
+  };
+
+  const handleSecuritySettingChange = (setting, value) => {
+    setSecuritySettings(prev => ({
+      ...prev,
+      [setting]: value
+    }));
+  };
+
+  const handlePrivacySettingChange = (setting, value) => {
+    setPrivacySettings(prev => ({
+      ...prev,
+      [setting]: value
+    }));
+  };
+
+  const handlePasswordChange = () => {
+    // Implement password change logic
+    console.log('Password change requested');
+  };
+
+  const handleTwoFactorSetup = () => {
+    // Implement 2FA setup logic
+    console.log('2FA setup requested');
+  };
+
+  const handleDataExport = () => {
+    // Implement data export logic
+    console.log('Data export requested');
+  };
+
+  const handleDataDeletion = () => {
+    // Implement data deletion logic
+    console.log('Data deletion requested');
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+    <Container maxWidth="lg">
+      <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Security & Privacy
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button
-            variant="outlined"
-            startIcon={<Shield />}
-            onClick={handleAccessControl}
-          >
-            Access Control
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<Lock />}
-            onClick={handleEncryption}
-          >
-            Encryption Settings
-          </Button>
-        </Box>
+        <Typography variant="body1" color="text.secondary">
+          Manage your security settings and privacy preferences
+        </Typography>
       </Box>
 
+      {/* Tabs */}
       <Paper sx={{ mb: 3 }}>
-        <Tabs value={activeTab} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs 
+          value={selectedTab} 
+          onChange={(e, newValue) => setSelectedTab(newValue)}
+          variant="scrollable"
+          scrollButtons="auto"
+        >
           <Tab label="Security Settings" />
-          <Tab label="Access Control" />
-          <Tab label="Audit Logs" />
+          <Tab label="Privacy Settings" />
           <Tab label="Compliance" />
+          <Tab label="Security Events" />
         </Tabs>
       </Paper>
 
-      {activeTab === 0 && (
+      {/* Security Settings */}
+      {selectedTab === 0 && (
         <Grid container spacing={3}>
-          {securitySettings.map((security) => (
-            <Grid item xs={12} md={6} lg={4} key={security.id}>
-              <Card 
-                sx={{ 
-                  height: '100%',
-                  cursor: 'pointer',
-                  '&:hover': { boxShadow: 4 }
-                }}
-                onClick={() => handleSecurityClick(security)}
-              >
-                <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      {security.icon}
-                      <Typography variant="h6" component="h3">
-                        {security.name}
-                      </Typography>
-                    </Box>
-                    <Chip 
-                      label={security.status} 
-                      size="small" 
-                      color={getStatusColor(security.status)}
-                    />
-                  </Box>
-
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    {security.description}
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Authentication
+                </Typography>
+                
+                <Box sx={{ mb: 3 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={securitySettings.twoFactorAuth}
+                        onChange={(e) => handleSecuritySettingChange('twoFactorAuth', e.target.checked)}
+                      />
+                    }
+                    label="Two-Factor Authentication"
+                  />
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Add an extra layer of security to your account
                   </Typography>
+                </Box>
 
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="caption" color="text.secondary">
-                      Level: {security.level}
-                    </Typography>
-                    <Chip 
-                      label={security.compliance} 
-                      size="small" 
-                      color={getComplianceColor(security.compliance)}
-                    />
-                  </Box>
-
-                  <Typography variant="caption" color="text.secondary">
-                    Last updated: {security.lastUpdated}
+                <Box sx={{ mb: 3 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={securitySettings.biometricAuth}
+                        onChange={(e) => handleSecuritySettingChange('biometricAuth', e.target.checked)}
+                      />
+                    }
+                    label="Biometric Authentication"
+                  />
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Use fingerprint or face recognition
                   </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
+                </Box>
+
+                <Box sx={{ mb: 3 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={securitySettings.autoLogout}
+                        onChange={(e) => handleSecuritySettingChange('autoLogout', e.target.checked)}
+                      />
+                    }
+                    label="Auto Logout"
+                  />
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Automatically log out after inactivity
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Button variant="outlined" onClick={handlePasswordChange}>
+                    Change Password
+                  </Button>
+                  <Button variant="outlined" onClick={handleTwoFactorSetup}>
+                    Setup 2FA
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Session Management
+                </Typography>
+                
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="body2" gutterBottom>
+                    Session Timeout (minutes)
+                  </Typography>
+                  <TextField
+                    type="number"
+                    value={securitySettings.sessionTimeout}
+                    onChange={(e) => handleSecuritySettingChange('sessionTimeout', parseInt(e.target.value))}
+                    fullWidth
+                    size="small"
+                  />
+                </Box>
+
+                <Box sx={{ mb: 3 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={securitySettings.auditLogging}
+                        onChange={(e) => handleSecuritySettingChange('auditLogging', e.target.checked)}
+                      />
+                    }
+                    label="Audit Logging"
+                  />
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Log all security events for monitoring
+                  </Typography>
+                </Box>
+
+                <Box sx={{ mb: 3 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={securitySettings.deviceManagement}
+                        onChange={(e) => handleSecuritySettingChange('deviceManagement', e.target.checked)}
+                      />
+                    }
+                    label="Device Management"
+                  />
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Manage and monitor connected devices
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
       )}
 
-      {activeTab === 1 && (
-        <Box>
-          <Typography variant="h6" gutterBottom>User Access Control</Typography>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={8}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>Active Users</Typography>
-                  <TableContainer>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>User</TableCell>
-                          <TableCell>Role</TableCell>
-                          <TableCell>Permissions</TableCell>
-                          <TableCell>Status</TableCell>
-                          <TableCell>Last Access</TableCell>
-                          <TableCell>Actions</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {accessControl.map((user) => (
-                          <TableRow key={user.id}>
-                            <TableCell>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Avatar sx={{ width: 32, height: 32 }}>
-                                  {user.user.split(' ').map(n => n[0]).join('')}
-                                </Avatar>
-                                <Typography variant="body2">{user.user}</Typography>
-                              </Box>
-                            </TableCell>
-                            <TableCell>{user.role}</TableCell>
-                            <TableCell>
-                              <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                                {user.permissions.map((permission) => (
-                                  <Chip key={permission} label={permission} size="small" variant="outlined" />
-                                ))}
-                              </Box>
-                            </TableCell>
-                            <TableCell>
-                              <Chip label={user.status} size="small" color={getStatusColor(user.status)} />
-                            </TableCell>
-                            <TableCell>{user.lastAccess}</TableCell>
-                            <TableCell>
-                              <Box sx={{ display: 'flex', gap: 1 }}>
-                                <IconButton size="small">
-                                  <Edit fontSize="small" />
-                                </IconButton>
-                                <IconButton size="small">
-                                  <Visibility fontSize="small" />
-                                </IconButton>
-                              </Box>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>Access Summary</Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        Active Users
-                      </Typography>
-                      <Typography variant="h4" color="primary">
-                        {accessControl.filter(u => u.status === 'active').length}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        Total Permissions
-                      </Typography>
-                      <Typography variant="h4" color="success.main">
-                        {accessControl.reduce((acc, user) => acc + user.permissions.length, 0)}
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" color="text.secondary">
-                        Security Level
-                      </Typography>
-                      <Typography variant="h4" color="warning.main">
-                        High
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </Box>
-      )}
-
-      {activeTab === 2 && (
-        <Box>
-          <Typography variant="h6" gutterBottom>Audit Logs</Typography>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={8}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>Recent Activity</Typography>
-                  <TableContainer>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>Action</TableCell>
-                          <TableCell>User</TableCell>
-                          <TableCell>Timestamp</TableCell>
-                          <TableCell>IP Address</TableCell>
-                          <TableCell>Status</TableCell>
-                          <TableCell>Details</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {auditLogs.map((log) => (
-                          <TableRow key={log.id}>
-                            <TableCell>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                {log.status === 'success' ? (
-                                  <CheckCircle color="success" fontSize="small" />
-                                ) : (
-                                  <Error color="error" fontSize="small" />
-                                )}
-                                {log.action}
-                              </Box>
-                            </TableCell>
-                            <TableCell>{log.user}</TableCell>
-                            <TableCell>{log.timestamp}</TableCell>
-                            <TableCell>{log.ip}</TableCell>
-                            <TableCell>
-                              <Chip label={log.status} size="small" color={getStatusColor(log.status)} />
-                            </TableCell>
-                            <TableCell>
-                              <Typography variant="body2" color="text.secondary">
-                                {log.details}
-                              </Typography>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>Security Alerts</Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Alert severity="warning">
-                      <Typography variant="body2">
-                        Failed login attempt from unknown IP
-                      </Typography>
-                    </Alert>
-                    <Alert severity="info">
-                      <Typography variant="body2">
-                        New user access granted
-                      </Typography>
-                    </Alert>
-                    <Alert severity="success">
-                      <Typography variant="body2">
-                        All systems operating normally
-                      </Typography>
-                    </Alert>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </Box>
-      )}
-
-      {activeTab === 3 && (
-        <Box>
-          <Typography variant="h6" gutterBottom>Compliance & Certifications</Typography>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>HIPAA Compliance</Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">Data Encryption</Typography>
-                      <CheckCircle color="success" />
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">Access Controls</Typography>
-                      <CheckCircle color="success" />
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">Audit Logs</Typography>
-                      <CheckCircle color="success" />
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">Data Backup</Typography>
-                      <CheckCircle color="success" />
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">Breach Notification</Typography>
-                      <CheckCircle color="success" />
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>GDPR Compliance</Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">Data Protection</Typography>
-                      <CheckCircle color="success" />
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">User Consent</Typography>
-                      <CheckCircle color="success" />
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">Right to Erasure</Typography>
-                      <CheckCircle color="success" />
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">Data Portability</Typography>
-                      <CheckCircle color="success" />
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2">Privacy by Design</Typography>
-                      <CheckCircle color="success" />
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </Box>
-      )}
-
-      {/* Encryption Settings Dialog */}
-      <Dialog open={encryptionDialog} onClose={() => setEncryptionDialog(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Encryption Settings</DialogTitle>
-        <DialogContent>
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Configure data encryption settings:
-            </Typography>
-            
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Encryption Algorithm</InputLabel>
-              <Select label="Encryption Algorithm" defaultValue="aes256">
-                <MenuItem value="aes256">AES-256 (Recommended)</MenuItem>
-                <MenuItem value="aes192">AES-192</MenuItem>
-                <MenuItem value="aes128">AES-128</MenuItem>
-              </Select>
-            </FormControl>
-
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Key Management</InputLabel>
-              <Select label="Key Management" defaultValue="aws">
-                <MenuItem value="aws">AWS KMS</MenuItem>
-                <MenuItem value="azure">Azure Key Vault</MenuItem>
-                <MenuItem value="gcp">Google Cloud KMS</MenuItem>
-              </Select>
-            </FormControl>
-
-            <FormControlLabel
-              control={<Switch defaultChecked />}
-              label="Enable end-to-end encryption"
-            />
-            
-            <FormControlLabel
-              control={<Switch defaultChecked />}
-              label="Encrypt data at rest"
-            />
-            
-            <FormControlLabel
-              control={<Switch defaultChecked />}
-              label="Encrypt data in transit"
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEncryptionDialog(false)}>Cancel</Button>
-          <Button variant="contained">
-            Save Settings
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Access Control Dialog */}
-      <Dialog open={accessDialog} onClose={() => setAccessDialog(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Access Control Management</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Typography variant="h6" gutterBottom>Add New User</Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <TextField fullWidth label="User Name" />
-                <TextField fullWidth label="Email" type="email" />
-                <FormControl fullWidth>
-                  <InputLabel>Role</InputLabel>
-                  <Select label="Role">
-                    <MenuItem value="doctor">Doctor</MenuItem>
-                    <MenuItem value="nurse">Nurse</MenuItem>
-                    <MenuItem value="admin">Administrator</MenuItem>
-                    <MenuItem value="specialist">Specialist</MenuItem>
-                  </Select>
-                </FormControl>
-                <FormControl fullWidth>
-                  <InputLabel>Permissions</InputLabel>
-                  <Select multiple label="Permissions">
-                    <MenuItem value="view">View Records</MenuItem>
-                    <MenuItem value="edit">Edit Records</MenuItem>
-                    <MenuItem value="export">Export Data</MenuItem>
-                    <MenuItem value="admin">Administrative Access</MenuItem>
-                  </Select>
-                </FormControl>
-                <Button variant="contained">Add User</Button>
-              </Box>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Typography variant="h6" gutterBottom>Security Policies</Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <FormControlLabel
-                  control={<Switch defaultChecked />}
-                  label="Require two-factor authentication"
-                />
-                <FormControlLabel
-                  control={<Switch defaultChecked />}
-                  label="Session timeout after 30 minutes"
-                />
-                <FormControlLabel
-                  control={<Switch defaultChecked />}
-                  label="Log all access attempts"
-                />
-                <FormControlLabel
-                  control={<Switch />}
-                  label="Require password change every 90 days"
-                />
-              </Box>
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAccessDialog(false)}>Cancel</Button>
-          <Button variant="contained">Save Changes</Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Security Details Dialog */}
-      <Dialog open={!!selectedSecurity} onClose={() => setSelectedSecurity(null)} maxWidth="md" fullWidth>
-        {selectedSecurity && (
-          <>
-            <DialogTitle>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h5">{selectedSecurity.name}</Typography>
-                <Chip label={selectedSecurity.status} color={getStatusColor(selectedSecurity.status)} />
-              </Box>
-            </DialogTitle>
-            <DialogContent>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="h6" gutterBottom>Configuration</Typography>
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      <strong>Level:</strong> {selectedSecurity.level}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      <strong>Compliance:</strong> {selectedSecurity.compliance}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      <strong>Last Updated:</strong> {selectedSecurity.lastUpdated}
-                    </Typography>
-                  </Box>
-                  
-                  <Typography variant="h6" gutterBottom>Description</Typography>
-                  <Typography variant="body2" paragraph>
-                    {selectedSecurity.description}
+      {/* Privacy Settings */}
+      {selectedTab === 1 && (
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Data Sharing
+                </Typography>
+                
+                <Box sx={{ mb: 3 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={privacySettings.dataSharing}
+                        onChange={(e) => handlePrivacySettingChange('dataSharing', e.target.checked)}
+                      />
+                    }
+                    label="Allow Data Sharing"
+                  />
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Share data with healthcare providers
                   </Typography>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="h6" gutterBottom>Quick Actions</Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Button variant="outlined" startIcon={<Settings />}>
-                      Configure
-                    </Button>
-                    <Button variant="outlined" startIcon={<Visibility />}>
-                      View Details
-                    </Button>
-                    <Button variant="outlined" startIcon={<History />}>
-                      View Logs
-                    </Button>
-                    <Button variant="outlined" startIcon={<Download />}>
-                      Export Settings
-                    </Button>
-                  </Box>
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setSelectedSecurity(null)}>Close</Button>
-            </DialogActions>
-          </>
-        )}
-      </Dialog>
-    </Box>
+                </Box>
+
+                <Box sx={{ mb: 3 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={privacySettings.marketingEmails}
+                        onChange={(e) => handlePrivacySettingChange('marketingEmails', e.target.checked)}
+                      />
+                    }
+                    label="Marketing Emails"
+                  />
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Receive promotional and informational emails
+                  </Typography>
+                </Box>
+
+                <Box sx={{ mb: 3 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={privacySettings.researchParticipation}
+                        onChange={(e) => handlePrivacySettingChange('researchParticipation', e.target.checked)}
+                      />
+                    }
+                    label="Research Participation"
+                  />
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Allow anonymized data for medical research
+                  </Typography>
+                </Box>
+
+                <Box sx={{ mb: 3 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={privacySettings.thirdPartyAccess}
+                        onChange={(e) => handlePrivacySettingChange('thirdPartyAccess', e.target.checked)}
+                      />
+                    }
+                    label="Third-Party Access"
+                  />
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Allow third-party applications access
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Data Rights
+                </Typography>
+                
+                <Box sx={{ mb: 3 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={privacySettings.dataPortability}
+                        onChange={(e) => handlePrivacySettingChange('dataPortability', e.target.checked)}
+                      />
+                    }
+                    label="Data Portability"
+                  />
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Export your data in standard format
+                  </Typography>
+                </Box>
+
+                <Box sx={{ mb: 3 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={privacySettings.rightToDelete}
+                        onChange={(e) => handlePrivacySettingChange('rightToDelete', e.target.checked)}
+                      />
+                    }
+                    label="Right to Delete"
+                  />
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Request complete data deletion
+                  </Typography>
+                </Box>
+
+                <Box sx={{ mb: 3 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={privacySettings.consentManagement}
+                        onChange={(e) => handlePrivacySettingChange('consentManagement', e.target.checked)}
+                      />
+                    }
+                    label="Consent Management"
+                  />
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Manage your consent preferences
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Button variant="outlined" onClick={handleDataExport}>
+                    Export Data
+                  </Button>
+                  <Button variant="outlined" color="error" onClick={handleDataDeletion}>
+                    Delete Data
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      )}
+
+      {/* Compliance */}
+      {selectedTab === 2 && (
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Compliance Status
+                </Typography>
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Standard</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Score</TableCell>
+                        <TableCell>Last Audit</TableCell>
+                        <TableCell>Next Audit</TableCell>
+                        <TableCell>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {complianceStatus.map((compliance) => (
+                        <TableRow key={compliance.id}>
+                          <TableCell>
+                            <Typography variant="subtitle2">{compliance.standard}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              icon={getStatusIcon(compliance.status)}
+                              label={compliance.status}
+                              color={getStatusColor(compliance.status)}
+                              size="small"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <LinearProgress
+                                variant="determinate"
+                                value={compliance.score}
+                                sx={{ width: 60, mr: 1 }}
+                              />
+                              <Typography variant="body2">{compliance.score}%</Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            {new Date(compliance.lastAudit).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(compliance.nextAudit).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <Button size="small" variant="outlined">
+                              View Report
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      )}
+
+      {/* Security Events */}
+      {selectedTab === 3 && (
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Security Events
+                </Typography>
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Event</TableCell>
+                        <TableCell>User</TableCell>
+                        <TableCell>IP Address</TableCell>
+                        <TableCell>Location</TableCell>
+                        <TableCell>Timestamp</TableCell>
+                        <TableCell>Risk</TableCell>
+                        <TableCell>Status</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {securityEvents.map((event) => (
+                        <TableRow key={event.id}>
+                          <TableCell>
+                            <Typography variant="subtitle2" sx={{ textTransform: 'capitalize' }}>
+                              {event.type.replace('_', ' ')}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>{event.user}</TableCell>
+                          <TableCell>{event.ip}</TableCell>
+                          <TableCell>{event.location}</TableCell>
+                          <TableCell>
+                            {new Date(event.timestamp).toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={event.risk}
+                              color={getRiskColor(event.risk)}
+                              size="small"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              icon={getStatusIcon(event.status)}
+                              label={event.status}
+                              color={getStatusColor(event.status)}
+                              size="small"
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      )}
+    </Container>
   );
 };
 

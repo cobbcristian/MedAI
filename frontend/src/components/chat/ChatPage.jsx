@@ -1,181 +1,337 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Container,
+  Typography,
+  Paper,
   Grid,
   Card,
   CardContent,
-  Typography,
+  CardActions,
   Button,
   Box,
-  TextField,
+  Chip,
   List,
   ListItem,
+  ListItemIcon,
   ListItemText,
-  ListItemAvatar,
-  Avatar,
   IconButton,
-  Paper,
-  Divider,
-  Badge,
-  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
   Alert,
-  CircularProgress,
+  LinearProgress,
+  Divider,
   Tabs,
   Tab,
-  InputAdornment,
+  Avatar,
+  Badge,
+  Fab,
   Tooltip,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemSecondaryAction,
   Switch,
   FormControlLabel,
+  InputAdornment,
+  Drawer,
+  AppBar,
+  Toolbar
 } from '@mui/material';
 import {
   Chat,
   Send,
   AttachFile,
+  Image,
+  VideoCall,
   Mic,
   MicOff,
-  RecordVoiceOver,
-  Stop,
+  EmojiEmotions,
   MoreVert,
   Search,
+  FilterList,
+  Archive,
+  Delete,
+  Block,
+  Report,
   Person,
   Group,
   Notifications,
   NotificationsOff,
-  Block,
-  Report,
-  Archive,
-  Delete,
+  Visibility,
+  VisibilityOff,
+  Add,
   Edit,
-  Reply,
-  Forward,
-  Download,
-  PlayArrow,
-  Pause,
-  VolumeUp,
-  VolumeOff,
-  Videocam,
-  Phone,
-  Schedule,
-  AccessTime,
+  Delete as DeleteIcon,
   CheckCircle,
-  CheckCircleOutline,
-  Error,
   Warning,
   Info,
-  Image,
-  Description,
-  VideoFile,
-  AudioFile,
-  InsertDriveFile,
+  AccessTime,
+  LocationOn,
+  Phone,
+  Email,
+  CalendarToday,
+  Event,
+  ConfirmationNumber,
+  Payment,
+  Receipt,
+  CameraAlt,
+  CameraEnhance,
+  CameraFront,
+  CameraRear,
+  FileCopy,
+  Download,
+  Share,
+  Reply,
+  Forward
 } from '@mui/icons-material';
-
-// Mock data for demonstration
-const mockContacts = [
-  {
-    id: 1,
-    name: 'Dr. Sarah Johnson',
-    specialty: 'Cardiology',
-    avatar: 'SJ',
-    status: 'online',
-    lastMessage: 'How are you feeling today?',
-    lastMessageTime: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-    unreadCount: 2,
-  },
-  {
-    id: 2,
-    name: 'Dr. Michael Chen',
-    specialty: 'Dermatology',
-    avatar: 'MC',
-    status: 'offline',
-    lastMessage: 'Your test results are ready',
-    lastMessageTime: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-    unreadCount: 0,
-  },
-  {
-    id: 3,
-    name: 'Nurse Emily Rodriguez',
-    specialty: 'Pediatrics',
-    avatar: 'ER',
-    status: 'online',
-    lastMessage: 'Please schedule your follow-up',
-    lastMessageTime: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
-    unreadCount: 1,
-  },
-];
-
-const mockMessages = [
-  {
-    id: 1,
-    senderId: 1,
-    senderName: 'Dr. Sarah Johnson',
-    content: 'Hello! How are you feeling today?',
-    timestamp: new Date(Date.now() - 30 * 60 * 1000),
-    type: 'text',
-    status: 'read',
-  },
-  {
-    id: 2,
-    senderId: 'user',
-    senderName: 'You',
-    content: 'I\'m feeling much better, thank you!',
-    timestamp: new Date(Date.now() - 25 * 60 * 1000),
-    type: 'text',
-    status: 'read',
-  },
-  {
-    id: 3,
-    senderId: 1,
-    senderName: 'Dr. Sarah Johnson',
-    content: 'That\'s great to hear. Any side effects from the medication?',
-    timestamp: new Date(Date.now() - 20 * 60 * 1000),
-    type: 'text',
-    status: 'read',
-  },
-  {
-    id: 4,
-    senderId: 'user',
-    senderName: 'You',
-    content: 'Just a slight headache in the morning',
-    timestamp: new Date(Date.now() - 15 * 60 * 1000),
-    type: 'text',
-    status: 'delivered',
-  },
-  {
-    id: 5,
-    senderId: 1,
-    senderName: 'Dr. Sarah Johnson',
-    content: 'That\'s normal. Let\'s monitor it for a few more days.',
-    timestamp: new Date(Date.now() - 10 * 60 * 1000),
-    type: 'text',
-    status: 'sent',
-  },
-];
+import api from '../../services/api';
 
 const ChatPage = () => {
-  const [contacts, setContacts] = useState(mockContacts);
-  const [selectedContact, setSelectedContact] = useState(null);
-  const [messages, setMessages] = useState(mockMessages);
+  const [conversations, setConversations] = useState([
+    {
+      id: 1,
+      type: 'doctor',
+      name: 'Dr. Sarah Johnson',
+      specialty: 'Cardiology',
+      avatar: 'SJ',
+      lastMessage: 'Your blood pressure results look good',
+      timestamp: '2 hours ago',
+      unread: 2,
+      online: true,
+      messages: [
+        {
+          id: 1,
+          sender: 'doctor',
+          text: 'Hello John, how are you feeling today?',
+          timestamp: '10:30 AM',
+          type: 'text'
+        },
+        {
+          id: 2,
+          sender: 'patient',
+          text: 'I\'m feeling much better, thank you',
+          timestamp: '10:32 AM',
+          type: 'text'
+        },
+        {
+          id: 3,
+          sender: 'doctor',
+          text: 'Your blood pressure results look good',
+          timestamp: '10:35 AM',
+          type: 'text'
+        }
+      ]
+    },
+    {
+      id: 2,
+      type: 'nurse',
+      name: 'Nurse Emily Davis',
+      specialty: 'Primary Care',
+      avatar: 'ED',
+      lastMessage: 'Please schedule your follow-up appointment',
+      timestamp: '1 day ago',
+      unread: 0,
+      online: false,
+      messages: [
+        {
+          id: 1,
+          sender: 'nurse',
+          text: 'Please schedule your follow-up appointment',
+          timestamp: 'Yesterday',
+          type: 'text'
+        }
+      ]
+    },
+    {
+      id: 3,
+      type: 'support',
+      name: 'Support Team',
+      specialty: 'Technical Support',
+      avatar: 'ST',
+      lastMessage: 'Your appointment has been confirmed',
+      timestamp: '3 days ago',
+      unread: 0,
+      online: true,
+      messages: [
+        {
+          id: 1,
+          sender: 'support',
+          text: 'Your appointment has been confirmed',
+          timestamp: '3 days ago',
+          type: 'text'
+        }
+      ]
+    }
+  ]);
+
+  const [selectedConversation, setSelectedConversation] = useState(null);
   const [newMessage, setNewMessage] = useState('');
-  const [isRecording, setIsRecording] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTab, setSelectedTab] = useState(0);
-  const [openFileDialog, setOpenFileDialog] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isNotificationsOn, setIsNotificationsOn] = useState(true);
-  
+  const [isTyping, setIsTyping] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showFileUpload, setShowFileUpload] = useState(false);
+
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
-  const audioRecorderRef = useRef(null);
+
+  const conversationTypes = [
+    { value: 'all', label: 'All', icon: <Chat /> },
+    { value: 'doctor', label: 'Doctors', icon: <Person /> },
+    { value: 'nurse', label: 'Nurses', icon: <Person /> },
+    { value: 'support', label: 'Support', icon: <Group /> },
+    { value: 'urgent', label: 'Urgent', icon: <Warning /> }
+  ];
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'online': return 'success';
+      case 'offline': return 'default';
+      case 'away': return 'warning';
+      default: return 'default';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'online': return <CheckCircle />;
+      case 'offline': return <Info />;
+      case 'away': return <Warning />;
+      default: return <Info />;
+    }
+  };
+
+  const getTypeIcon = (type) => {
+    switch (type) {
+      case 'doctor': return <Person />;
+      case 'nurse': return <Person />;
+      case 'support': return <Group />;
+      case 'urgent': return <Warning />;
+      default: return <Chat />;
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !selectedConversation) return;
+
+    const message = {
+      id: Date.now(),
+      sender: 'patient',
+      text: newMessage,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      type: 'text'
+    };
+
+    // Update conversation with new message
+    setConversations(prev => 
+      prev.map(conv => 
+        conv.id === selectedConversation.id 
+          ? {
+              ...conv,
+              messages: [...conv.messages, message],
+              lastMessage: newMessage,
+              timestamp: 'Just now',
+              unread: 0
+            }
+          : conv
+      )
+    );
+
+    setNewMessage('');
+    setIsTyping(false);
+
+    // Simulate typing indicator from doctor
+    setTimeout(() => {
+      setIsTyping(true);
+      setTimeout(() => {
+        const reply = {
+          id: Date.now() + 1,
+          sender: 'doctor',
+          text: 'Thank you for the update. I\'ll review this information.',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          type: 'text'
+        };
+
+        setConversations(prev => 
+          prev.map(conv => 
+            conv.id === selectedConversation.id 
+              ? {
+                  ...conv,
+                  messages: [...conv.messages, reply],
+                  lastMessage: reply.text,
+                  timestamp: 'Just now'
+                }
+              : conv
+          )
+        );
+        setIsTyping(false);
+      }, 2000);
+    }, 1000);
+  };
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file && selectedConversation) {
+      const message = {
+        id: Date.now(),
+        sender: 'patient',
+        text: `Sent: ${file.name}`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        type: 'file',
+        fileName: file.name,
+        fileSize: file.size
+      };
+
+      setConversations(prev => 
+        prev.map(conv => 
+          conv.id === selectedConversation.id 
+            ? {
+                ...conv,
+                messages: [...conv.messages, message],
+                lastMessage: `Sent: ${file.name}`,
+                timestamp: 'Just now'
+              }
+            : conv
+        )
+      );
+    }
+  };
+
+  const handleStartRecording = () => {
+    setIsRecording(true);
+    // Simulate recording
+    setTimeout(() => {
+      setIsRecording(false);
+      const message = {
+        id: Date.now(),
+        sender: 'patient',
+        text: 'Voice message',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        type: 'voice'
+      };
+
+      setConversations(prev => 
+        prev.map(conv => 
+          conv.id === selectedConversation.id 
+            ? {
+                ...conv,
+                messages: [...conv.messages, message],
+                lastMessage: 'Voice message',
+                timestamp: 'Just now'
+              }
+            : conv
+        )
+      );
+    }, 3000);
+  };
+
+  const handleStopRecording = () => {
+    setIsRecording(false);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -183,428 +339,305 @@ const ChatPage = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [selectedConversation?.messages]);
 
-  useEffect(() => {
-    // Simulate typing indicator
-    if (selectedContact) {
-      const timer = setTimeout(() => {
-        setIsTyping(false);
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [selectedContact]);
+  const filteredConversations = selectedTab === 0 
+    ? conversations 
+    : conversations.filter(conv => conv.type === conversationTypes[selectedTab]?.value);
 
-  const handleSendMessage = () => {
-    if (newMessage.trim() && selectedContact) {
-      const message = {
-        id: Date.now(),
-        senderId: 'user',
-        senderName: 'You',
-        content: newMessage,
-        timestamp: new Date(),
-        type: 'text',
-        status: 'sent',
-      };
-      
-      setMessages([...messages, message]);
-      setNewMessage('');
-      
-      // Simulate reply
-      setTimeout(() => {
-        const reply = {
-          id: Date.now() + 1,
-          senderId: selectedContact.id,
-          senderName: selectedContact.name,
-          content: 'Thanks for the update! I\'ll review this information.',
-          timestamp: new Date(),
-          type: 'text',
-          status: 'read',
-        };
-        setMessages(prev => [...prev, reply]);
-      }, 2000);
-    }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  const handleStartRecording = () => {
-    setIsRecording(true);
-    // In real app, this would start audio recording
-  };
-
-  const handleStopRecording = () => {
-    setIsRecording(false);
-    // In real app, this would stop recording and send audio file
-    const audioMessage = {
-      id: Date.now(),
-      senderId: 'user',
-      senderName: 'You',
-      content: 'Voice message',
-      timestamp: new Date(),
-      type: 'audio',
-      status: 'sent',
-      duration: '0:15',
-    };
-    setMessages([...messages, audioMessage]);
-  };
-
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      const fileMessage = {
-        id: Date.now(),
-        senderId: 'user',
-        senderName: 'You',
-        content: file.name,
-        timestamp: new Date(),
-        type: 'file',
-        status: 'sent',
-        fileSize: file.size,
-        fileType: file.type,
-      };
-      setMessages([...messages, fileMessage]);
-    }
-  };
-
-  const handleContactSelect = (contact) => {
-    setSelectedContact(contact);
-    // Mark messages as read
-    setContacts(contacts.map(c => 
-      c.id === contact.id ? { ...c, unreadCount: 0 } : c
-    ));
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'sent': return <CheckCircleOutline />;
-      case 'delivered': return <CheckCircle />;
-      case 'read': return <CheckCircle color="primary" />;
-      default: return <Error />;
-    }
-  };
-
-  const getFileIcon = (fileType) => {
-    if (fileType.startsWith('image/')) return <Image />;
-    if (fileType.startsWith('video/')) return <VideoFile />;
-    if (fileType.startsWith('audio/')) return <AudioFile />;
-    if (fileType.includes('pdf') || fileType.includes('document')) return <Description />;
-    return <InsertDriveFile />;
-  };
-
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const filteredContacts = contacts.filter(contact =>
-    contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    contact.specialty.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const filteredMessages = messages.filter(message =>
-    selectedContact ? 
-      (message.senderId === selectedContact.id || message.senderId === 'user') :
-      true
+  const searchFilteredConversations = filteredConversations.filter(conv =>
+    conv.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    conv.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ mt: 4, mb: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Chat
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={isNotificationsOn}
-                  onChange={(e) => setIsNotificationsOn(e.target.checked)}
-                />
-              }
-              label="Notifications"
-            />
-            <Button
-              variant="outlined"
-              startIcon={<Group />}
-            >
-              New Group
-            </Button>
-          </Box>
-        </Box>
+    <Container maxWidth="lg" sx={{ height: 'calc(100vh - 100px)' }}>
+      <Grid container spacing={2} sx={{ height: '100%' }}>
+        {/* Conversations List */}
+        <Grid item xs={12} md={4}>
+          <Paper sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            {/* Header */}
+            <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+              <Typography variant="h6" gutterBottom>
+                Messages
+              </Typography>
+              <TextField
+                fullWidth
+                size="small"
+                placeholder="Search conversations..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                InputProps={{
+                  startAdornment: <Search />,
+                }}
+              />
+            </Box>
 
-        <Grid container spacing={3} sx={{ height: '70vh' }}>
-          {/* Contacts List */}
-          <Grid item xs={12} md={4}>
-            <Card sx={{ height: '100%' }}>
-              <CardContent sx={{ p: 0 }}>
-                <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-                  <TextField
-                    fullWidth
-                    placeholder="Search contacts..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Search />
-                        </InputAdornment>
-                      ),
-                    }}
+            {/* Tabs */}
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+              <Tabs 
+                value={selectedTab} 
+                onChange={(e, newValue) => setSelectedTab(newValue)}
+                variant="scrollable"
+                scrollButtons="auto"
+              >
+                <Tab label="All" />
+                {conversationTypes.slice(1).map((type) => (
+                  <Tab 
+                    key={type.value} 
+                    label={type.label}
+                    icon={type.icon}
+                    iconPosition="start"
                   />
+                ))}
+              </Tabs>
+            </Box>
+
+            {/* Conversations */}
+            <Box sx={{ flex: 1, overflow: 'auto' }}>
+              <List>
+                {searchFilteredConversations.map((conversation) => (
+                  <ListItem
+                    key={conversation.id}
+                    button
+                    selected={selectedConversation?.id === conversation.id}
+                    onClick={() => setSelectedConversation(conversation)}
+                    sx={{ borderBottom: 1, borderColor: 'divider' }}
+                  >
+                    <ListItemIcon>
+                      <Badge
+                        badgeContent={conversation.unread}
+                        color="error"
+                        invisible={conversation.unread === 0}
+                      >
+                        <Avatar sx={{ bgcolor: conversation.online ? 'success.main' : 'grey.400' }}>
+                          {conversation.avatar}
+                        </Avatar>
+                      </Badge>
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography variant="subtitle1" sx={{ fontWeight: conversation.unread > 0 ? 'bold' : 'normal' }}>
+                            {conversation.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {conversation.timestamp}
+                          </Typography>
+                        </Box>
+                      }
+                      secondary={
+                        <Box>
+                          <Typography 
+                            variant="body2" 
+                            color="text.secondary"
+                            sx={{ 
+                              fontWeight: conversation.unread > 0 ? 'bold' : 'normal',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center'
+                            }}
+                          >
+                            {conversation.lastMessage}
+                            {conversation.online && (
+                              <Chip 
+                                label="Online" 
+                                size="small" 
+                                color="success" 
+                                variant="outlined"
+                              />
+                            )}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {conversation.specialty}
+                          </Typography>
+                        </Box>
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </Box>
+          </Paper>
+        </Grid>
+
+        {/* Chat Area */}
+        <Grid item xs={12} md={8}>
+          <Paper sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            {selectedConversation ? (
+              <>
+                {/* Chat Header */}
+                <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Avatar sx={{ bgcolor: selectedConversation.online ? 'success.main' : 'grey.400' }}>
+                        {selectedConversation.avatar}
+                      </Avatar>
+                      <Box>
+                        <Typography variant="h6">
+                          {selectedConversation.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {selectedConversation.specialty}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <IconButton size="small">
+                        <VideoCall />
+                      </IconButton>
+                      <IconButton size="small">
+                        <Phone />
+                      </IconButton>
+                      <IconButton size="small">
+                        <MoreVert />
+                      </IconButton>
+                    </Box>
+                  </Box>
                 </Box>
-                
-                <List sx={{ p: 0 }}>
-                  {filteredContacts.map((contact) => (
-                    <ListItem
-                      key={contact.id}
-                      button
-                      selected={selectedContact?.id === contact.id}
-                      onClick={() => handleContactSelect(contact)}
+
+                {/* Messages */}
+                <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+                  {selectedConversation.messages.map((message) => (
+                    <Box
+                      key={message.id}
                       sx={{
-                        borderBottom: 1,
-                        borderColor: 'divider',
-                        '&:hover': { bgcolor: 'action.hover' },
+                        display: 'flex',
+                        justifyContent: message.sender === 'patient' ? 'flex-end' : 'flex-start',
+                        mb: 2
                       }}
                     >
-                      <ListItemAvatar>
-                        <Badge
-                          color={contact.status === 'online' ? 'success' : 'default'}
-                          variant="dot"
-                          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                        >
-                          <Avatar sx={{ bgcolor: 'primary.main' }}>
-                            {contact.avatar}
-                          </Avatar>
-                        </Badge>
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Typography variant="subtitle1">{contact.name}</Typography>
-                            {contact.unreadCount > 0 && (
-                              <Badge badgeContent={contact.unreadCount} color="primary" />
-                            )}
-                          </Box>
-                        }
-                        secondary={
-                          <Box>
-                            <Typography variant="body2" color="text.secondary">
-                              {contact.specialty}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary" noWrap>
-                              {contact.lastMessage}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {contact.lastMessageTime.toLocaleTimeString()}
-                            </Typography>
-                          </Box>
-                        }
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          {/* Chat Area */}
-          <Grid item xs={12} md={8}>
-            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-              {selectedContact ? (
-                <>
-                  {/* Chat Header */}
-                  <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Badge
-                          color={selectedContact.status === 'online' ? 'success' : 'default'}
-                          variant="dot"
-                          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                        >
-                          <Avatar sx={{ bgcolor: 'primary.main' }}>
-                            {selectedContact.avatar}
-                          </Avatar>
-                        </Badge>
-                        <Box>
-                          <Typography variant="h6">{selectedContact.name}</Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {selectedContact.specialty}
-                          </Typography>
-                        </Box>
-                      </Box>
-                      <Box sx={{ display: 'flex', gap: 1 }}>
-                        <IconButton size="small">
-                          <Videocam />
-                        </IconButton>
-                        <IconButton size="small">
-                          <Phone />
-                        </IconButton>
-                        <IconButton size="small">
-                          <MoreVert />
-                        </IconButton>
-                      </Box>
-                    </Box>
-                  </Box>
-
-                  {/* Messages */}
-                  <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
-                    {filteredMessages.map((message) => (
                       <Box
-                        key={message.id}
                         sx={{
-                          display: 'flex',
-                          justifyContent: message.senderId === 'user' ? 'flex-end' : 'flex-start',
-                          mb: 2,
+                          maxWidth: '70%',
+                          bgcolor: message.sender === 'patient' ? 'primary.main' : 'grey.100',
+                          color: message.sender === 'patient' ? 'white' : 'text.primary',
+                          borderRadius: 2,
+                          p: 1.5,
+                          position: 'relative'
                         }}
                       >
-                        <Box
-                          sx={{
-                            maxWidth: '70%',
-                            bgcolor: message.senderId === 'user' ? 'primary.main' : 'grey.100',
-                            color: message.senderId === 'user' ? 'white' : 'text.primary',
-                            borderRadius: 2,
-                            p: 1.5,
-                            position: 'relative',
+                        <Typography variant="body2">
+                          {message.text}
+                        </Typography>
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            opacity: 0.7,
+                            display: 'block',
+                            mt: 0.5
                           }}
                         >
-                          {message.type === 'text' && (
-                            <Typography variant="body1">{message.content}</Typography>
-                          )}
-                          
-                          {message.type === 'file' && (
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              {getFileIcon(message.fileType)}
-                              <Box>
-                                <Typography variant="body2">{message.content}</Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                  {formatFileSize(message.fileSize)}
-                                </Typography>
-                              </Box>
-                              <IconButton size="small">
-                                <Download />
-                              </IconButton>
-                            </Box>
-                          )}
-                          
-                          {message.type === 'audio' && (
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <IconButton size="small">
-                                <PlayArrow />
-                              </IconButton>
-                              <Typography variant="body2">{message.content}</Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {message.duration}
-                              </Typography>
-                            </Box>
-                          )}
-                          
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 0.5 }}>
-                            <Typography variant="caption" color="text.secondary">
-                              {message.timestamp.toLocaleTimeString()}
+                          {message.timestamp}
+                        </Typography>
+                        {message.type === 'file' && (
+                          <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <AttachFile />
+                            <Typography variant="caption">
+                              {message.fileName} ({Math.round(message.fileSize / 1024)}KB)
                             </Typography>
-                            {message.senderId === 'user' && (
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                {getStatusIcon(message.status)}
-                              </Box>
-                            )}
                           </Box>
-                        </Box>
+                        )}
+                        {message.type === 'voice' && (
+                          <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Mic />
+                            <Typography variant="caption">
+                              Voice message
+                            </Typography>
+                          </Box>
+                        )}
                       </Box>
-                    ))}
-                    
-                    {isTyping && (
-                      <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2 }}>
-                        <Box sx={{ bgcolor: 'grey.100', borderRadius: 2, p: 1.5 }}>
-                          <Typography variant="body2" color="text.secondary">
-                            {selectedContact.name} is typing...
-                          </Typography>
-                        </Box>
-                      </Box>
-                    )}
-                    
-                    <div ref={messagesEndRef} />
-                  </Box>
-
-                  {/* Message Input */}
-                  <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}>
-                      <IconButton
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isRecording}
-                      >
-                        <AttachFile />
-                      </IconButton>
-                      
-                      <TextField
-                        fullWidth
-                        multiline
-                        maxRows={4}
-                        placeholder="Type a message..."
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                        disabled={isRecording}
-                        sx={{ flex: 1 }}
-                      />
-                      
-                      <IconButton
-                        onClick={isRecording ? handleStopRecording : handleStartRecording}
-                        color={isRecording ? 'error' : 'primary'}
-                      >
-                        {isRecording ? <Stop /> : <Mic />}
-                      </IconButton>
-                      
-                      <IconButton
-                        onClick={handleSendMessage}
-                        disabled={!newMessage.trim() || isRecording}
-                        color="primary"
-                      >
-                        <Send />
-                      </IconButton>
                     </Box>
-                    
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      style={{ display: 'none' }}
-                      onChange={handleFileUpload}
-                      accept="image/*,video/*,audio/*,.pdf,.doc,.docx"
-                    />
-                  </Box>
-                </>
-              ) : (
-                <Box sx={{ 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  height: '100%',
-                  p: 4
-                }}>
-                  <Chat sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-                  <Typography variant="h6" color="text.secondary" gutterBottom>
-                    Select a contact to start chatting
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" textAlign="center">
-                    Choose a healthcare provider from the list to begin your conversation
-                  </Typography>
+                  ))}
+                  
+                  {isTyping && (
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2 }}>
+                      <Box sx={{ bgcolor: 'grey.100', borderRadius: 2, p: 1.5 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          {selectedConversation.name} is typing...
+                        </Typography>
+                      </Box>
+                    </Box>
+                  )}
+                  
+                  <div ref={messagesEndRef} />
                 </Box>
-              )}
-            </Card>
-          </Grid>
+
+                {/* Message Input */}
+                <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <IconButton 
+                      size="small"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <AttachFile />
+                    </IconButton>
+                    <IconButton 
+                      size="small"
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                    >
+                      <EmojiEmotions />
+                    </IconButton>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      placeholder="Type a message..."
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              size="small"
+                              onClick={isRecording ? handleStopRecording : handleStartRecording}
+                              color={isRecording ? 'error' : 'primary'}
+                            >
+                              {isRecording ? <MicOff /> : <Mic />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                    <IconButton 
+                      color="primary"
+                      onClick={handleSendMessage}
+                      disabled={!newMessage.trim()}
+                    >
+                      <Send />
+                    </IconButton>
+                  </Box>
+                  
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    style={{ display: 'none' }}
+                    accept="image/*,.pdf,.doc,.docx"
+                  />
+                </Box>
+              </>
+            ) : (
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                height: '100%',
+                p: 3
+              }}>
+                <Chat sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  Select a conversation
+                </Typography>
+                <Typography variant="body2" color="text.secondary" textAlign="center">
+                  Choose a conversation from the list to start messaging
+                </Typography>
+              </Box>
+            )}
+          </Paper>
         </Grid>
-      </Box>
+      </Grid>
     </Container>
   );
 };

@@ -1,18 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Box,
+  Container,
   Typography,
   Paper,
   Grid,
   Card,
   CardContent,
+  CardActions,
   Button,
-  IconButton,
+  Box,
   Chip,
   List,
   ListItem,
-  ListItemText,
   ListItemIcon,
+  ListItemText,
+  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -27,667 +29,787 @@ import {
   Divider,
   Tabs,
   Tab,
+  Avatar,
   Badge,
-  Tooltip,
   Fab,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
+  Tooltip,
   Switch,
   FormControlLabel,
-  Slider,
-  Radio,
-  RadioGroup
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TablePagination,
+  InputAdornment,
+  Drawer,
+  AppBar,
+  Toolbar
 } from '@mui/material';
 import {
-  Psychology,
-  Analytics,
-  Science,
-  Timeline,
-  TrendingUp,
-  TrendingDown,
-  Compare,
-  School,
-  AutoFixHigh,
-  Lightbulb,
-  Warning,
-  CheckCircle,
-  Error,
-  Info,
-  ExpandMore,
-  PlayArrow,
-  Stop,
-  Refresh,
-  Download,
-  Upload,
-  Settings,
-  Visibility,
+  Search,
+  FilterList,
+  Sort,
+  MoreVert,
   Edit,
   Delete,
+  Visibility,
   Add,
-  History,
-  Security,
-  CloudUpload,
+  Person,
+  LocalHospital,
+  Medication,
+  CalendarToday,
+  VideoCall,
+  Chat,
+  Notifications,
+  Settings,
+  CheckCircle,
+  Warning,
+  Info,
+  AccessTime,
+  LocationOn,
+  Phone,
+  Email,
+  CalendarToday as CalendarIcon,
+  Event,
+  Notifications as NotificationsIcon,
+  ConfirmationNumber,
+  Payment,
+  Receipt,
+  CameraAlt,
+  CameraEnhance,
+  CameraFront,
+  CameraRear,
   FileCopy,
-  Print,
+  Download,
+  Share,
+  Reply,
+  Forward,
+  HealthAndSafety,
+  MonitorHeart,
+  Bloodtype,
+  Weight,
+  Height,
+  Favorite,
+  Speed,
+  TrendingUp,
+  TrendingDown,
+  Security,
+  Privacy,
   Lock,
-  Public,
-  Verified,
-  Warning as WarningIcon,
-  CheckCircle as CheckCircleIcon,
-  Error as ErrorIcon,
-  Info as InfoIcon,
+  Shield,
+  VerifiedUser,
+  Support,
+  Help,
+  QuestionAnswer,
+  Assignment,
+  Description,
+  Assessment,
+  Analytics,
+  BarChart,
+  PieChart,
+  LineChart,
+  ShowChart,
   Timeline as TimelineIcon,
-  Analytics as AnalyticsIcon,
-  Psychology as PsychologyIcon,
-  Science as ScienceIcon,
-  Compare as CompareIcon,
-  School as SchoolIcon,
-  AutoFixHigh as AutoFixHighIcon,
-  Lightbulb as LightbulbIcon
+  History,
+  Schedule,
+  Alarm,
+  Timer,
+  Stop,
+  PlayArrow,
+  Pause,
+  SkipNext,
+  SkipPrevious,
+  VolumeUp,
+  VolumeOff,
+  Mic,
+  MicOff,
+  Videocam,
+  VideocamOff,
+  ScreenShare,
+  StopScreenShare,
+  RecordVoiceOver,
+  Fullscreen,
+  FullscreenExit,
+  Settings as SettingsIcon,
+  Tune,
+  Build,
+  Code,
+  BugReport,
+  Report,
+  Feedback,
+  RateReview,
+  Star,
+  StarBorder,
+  StarHalf,
+  ThumbUp,
+  ThumbDown,
+  ThumbUpOutlined,
+  ThumbDownOutlined,
+  FavoriteBorder,
+  Bookmark,
+  BookmarkBorder,
+  Flag,
+  FlagOutlined,
+  Block,
+  BlockOutlined,
+  Report as ReportIcon,
+  ReportOutlined,
+  Archive,
+  ArchiveOutlined,
+  Delete as DeleteIcon,
+  DeleteOutlined,
+  Restore,
+  RestoreFromTrash,
+  Undo,
+  Redo,
+  Refresh,
+  Sync,
+  CloudUpload,
+  CloudDownload,
+  CloudSync,
+  Backup,
+  Save,
+  SaveAlt,
+  Print,
+  Share as ShareIcon,
+  ShareOutlined,
+  Link,
+  LinkOff,
+  ContentCopy,
+  ContentPaste,
+  Cut,
+  SelectAll,
+  FindInPage,
+  FindReplace,
+  ZoomIn,
+  ZoomOut,
+  Fullscreen as FullscreenIcon,
+  FullscreenExit as FullscreenExitIcon,
+  OpenInNew,
+  OpenInBrowser,
+  Launch,
+  ExitToApp,
+  Logout,
+  Login,
+  PersonAdd,
+  PersonRemove,
+  Group,
+  GroupAdd,
+  GroupRemove,
+  SupervisorAccount,
+  AdminPanelSettings,
+  Security as SecurityIcon,
+  VpnKey,
+  Lock as LockIcon,
+  LockOpen,
+  LockOutline,
+  LockPerson,
+  LockReset,
+  Password,
+  Key,
+  KeyOff,
+  Visibility as VisibilityIcon,
+  VisibilityOff,
+  VerifiedUser as VerifiedUserIcon,
+  VerifiedUserOutlined,
+  Badge as BadgeIcon,
+  BadgeOutlined,
+  CardMembership,
+  CardGiftcard,
+  CardTravel,
+  CreditCard,
+  CreditCardOff,
+  CreditScore,
+  AccountBalance,
+  AccountBalanceWallet,
+  AccountBox,
+  AccountCircle,
+  AccountTree,
+  AccountTreeOutlined,
+  Business,
+  BusinessCenter,
+  BusinessCenterOutlined,
+  CorporateFare,
+  CorporateFareOutlined,
+  Domain,
+  DomainDisabled,
+  DomainVerification,
+  Home,
+  HomeOutlined,
+  HomeWork,
+  HomeWorkOutlined,
+  House,
+  HouseOutlined,
+  LocationCity,
+  LocationCityOutlined,
+  LocationOff,
+  LocationOn as LocationOnIcon,
+  LocationOnOutlined,
+  MyLocation,
+  Navigation,
+  NavigationOutlined,
+  NearMe,
+  NearMeOutlined,
+  Place,
+  PlaceOutlined,
+  Room,
+  RoomOutlined,
+  Satellite,
+  SatelliteAlt,
+  SatelliteAltOutlined,
+  SatelliteOutlined,
+  Streetview,
+  StreetviewOutlined,
+  Terrain,
+  TerrainOutlined,
+  Traffic,
+  TrafficOutlined,
+  Train,
+  TrainOutlined,
+  Tram,
+  TramOutlined,
+  Directions,
+  DirectionsBike,
+  DirectionsBikeOutlined,
+  DirectionsBoat,
+  DirectionsBoatOutlined,
+  DirectionsBus,
+  DirectionsBusOutlined,
+  DirectionsCar,
+  DirectionsCarOutlined,
+  DirectionsOff,
+  DirectionsOffOutlined,
+  DirectionsRailway,
+  DirectionsRailwayOutlined,
+  DirectionsRun,
+  DirectionsRunOutlined,
+  DirectionsSubway,
+  DirectionsSubwayOutlined,
+  DirectionsTransit,
+  DirectionsTransitOutlined,
+  DirectionsWalk,
+  DirectionsWalkOutlined,
+  Flight,
+  FlightLand,
+  FlightTakeoff,
+  FlightOutlined,
+  FlightLandOutlined,
+  FlightTakeoffOutlined,
+  Hotel,
+  HotelOutlined,
+  LocalAirport,
+  LocalAirportOutlined,
+  LocalAtm,
+  LocalAtmOutlined,
+  LocalBar,
+  LocalBarOutlined,
+  LocalCafe,
+  LocalCafeOutlined,
+  LocalCarWash,
+  LocalCarWashOutlined,
+  LocalConvenienceStore,
+  LocalConvenienceStoreOutlined,
+  LocalDining,
+  LocalDiningOutlined,
+  LocalDrink,
+  LocalDrinkOutlined,
+  LocalFlorist,
+  LocalFloristOutlined,
+  LocalGasStation,
+  LocalGasStationOutlined,
+  LocalGroceryStore,
+  LocalGroceryStoreOutlined,
+  LocalHospital as LocalHospitalIcon,
+  LocalHospitalOutlined,
+  LocalHotel,
+  LocalHotelOutlined,
+  LocalLaundryService,
+  LocalLaundryServiceOutlined,
+  LocalLibrary,
+  LocalLibraryOutlined,
+  LocalMall,
+  LocalMallOutlined,
+  LocalMovies,
+  LocalMoviesOutlined,
+  LocalOffer,
+  LocalOfferOutlined,
+  LocalParking,
+  LocalParkingOutlined,
+  LocalPharmacy,
+  LocalPharmacyOutlined,
+  LocalPizza,
+  LocalPizzaOutlined,
+  LocalPlay,
+  LocalPlayOutlined,
+  LocalPostOffice,
+  LocalPostOfficeOutlined,
+  LocalPrintshop,
+  LocalPrintshopOutlined,
+  LocalSee,
+  LocalSeeOutlined,
+  LocalShipping,
+  LocalShippingOutlined,
+  LocalTaxi,
+  LocalTaxiOutlined,
+  LocalTheater,
+  LocalTheaterOutlined
 } from '@mui/icons-material';
+import api from '../../services/api';
 
 const AdvancedAIFeaturesPage = () => {
-  const [activeTab, setActiveTab] = useState(0);
-  const [selectedFeature, setSelectedFeature] = useState(null);
-  const [diagnosisDialog, setDiagnosisDialog] = useState(false);
-  const [modelDialog, setModelDialog] = useState(false);
-  const [trainingDialog, setTrainingDialog] = useState(false);
-  const [analysisProgress, setAnalysisProgress] = useState(0);
-  const [analyzing, setAnalyzing] = useState(false);
-
-  // Mock AI features data
-  const [aiFeatures] = useState([
+  const [selectedTab, setSelectedTab] = useState(0);
+  const [aiModels, setAiModels] = useState([
     {
       id: 1,
-      title: 'AI Diagnosis',
-      category: 'Diagnostic',
-      description: 'Advanced diagnostic AI algorithms for comprehensive health analysis',
+      name: 'GPT-4 Medical',
+      type: 'Diagnosis',
+      accuracy: 94.5,
       status: 'active',
-      accuracy: 94.2,
       lastUpdated: '2024-01-15',
-      features: ['Multi-modal analysis', 'Symptom correlation', 'Risk assessment'],
-      icon: <Psychology color="primary" />
+      description: 'Advanced medical diagnosis model trained on clinical data',
+      performance: {
+        precision: 0.92,
+        recall: 0.89,
+        f1Score: 0.90
+      }
     },
     {
       id: 2,
-      title: 'Predictive Analytics',
-      category: 'Analytics',
-      description: 'Predict health trends and potential risks using machine learning',
+      name: 'BERT-Clinical',
+      type: 'Text Analysis',
+      accuracy: 91.2,
       status: 'active',
-      accuracy: 89.7,
-      lastUpdated: '2024-01-12',
-      features: ['Disease progression', 'Readmission risk', 'Treatment response'],
-      icon: <Analytics color="secondary" />
+      lastUpdated: '2024-01-10',
+      description: 'Clinical text analysis and medical record processing',
+      performance: {
+        precision: 0.89,
+        recall: 0.87,
+        f1Score: 0.88
+      }
     },
     {
       id: 3,
-      title: 'Treatment Planning',
-      category: 'Planning',
-      description: 'AI-powered treatment recommendations based on patient data',
-      status: 'active',
-      accuracy: 91.3,
-      lastUpdated: '2024-01-10',
-      features: ['Personalized plans', 'Drug interactions', 'Dosage optimization'],
-      icon: <Science color="success" />
-    },
-    {
-      id: 4,
-      title: 'Research Insights',
-      category: 'Research',
-      description: 'Access to latest medical research and clinical guidelines',
-      status: 'active',
+      name: 'Vision-Med',
+      type: 'Image Analysis',
       accuracy: 96.8,
-      lastUpdated: '2024-01-08',
-      features: ['PubMed integration', 'Clinical trials', 'Guideline updates'],
-      icon: <Timeline color="info" />
-    },
-    {
-      id: 5,
-      title: 'Model Comparison',
-      category: 'Analysis',
-      description: 'Compare different AI models for optimal performance',
-      status: 'active',
-      accuracy: 92.1,
-      lastUpdated: '2024-01-05',
-      features: ['Performance metrics', 'A/B testing', 'Model selection'],
-      icon: <Compare color="warning" />
-    },
-    {
-      id: 6,
-      title: 'AI Training Sandbox',
-      category: 'Development',
-      description: 'Federated learning environment for model training',
-      status: 'development',
-      accuracy: 87.5,
-      lastUpdated: '2024-01-03',
-      features: ['Federated learning', 'Model training', 'Performance monitoring'],
-      icon: <School color="error" />
+      status: 'training',
+      lastUpdated: '2024-01-20',
+      description: 'Medical image analysis for radiology and pathology',
+      performance: {
+        precision: 0.95,
+        recall: 0.94,
+        f1Score: 0.94
+      }
     }
   ]);
 
-  const [modelPerformance] = useState([
+  const [trainingJobs, setTrainingJobs] = useState([
     {
-      model: 'DenseNet121',
-      accuracy: 94.2,
-      precision: 92.8,
-      recall: 93.5,
-      f1Score: 93.1,
-      status: 'production'
+      id: 1,
+      modelName: 'Vision-Med',
+      status: 'training',
+      progress: 75,
+      startTime: '2024-01-20 10:00:00',
+      estimatedCompletion: '2024-01-21 14:00:00',
+      dataset: 'Medical Images Dataset v2.1',
+      epochs: 100,
+      currentEpoch: 75
     },
     {
-      model: 'ResNet50',
-      accuracy: 91.7,
-      precision: 90.3,
-      recall: 91.2,
-      f1Score: 90.7,
-      status: 'testing'
-    },
-    {
-      model: 'EfficientNet',
-      accuracy: 93.8,
-      precision: 93.1,
-      recall: 94.0,
-      f1Score: 93.5,
-      status: 'production'
+      id: 2,
+      modelName: 'GPT-4 Medical',
+      status: 'completed',
+      progress: 100,
+      startTime: '2024-01-15 08:00:00',
+      estimatedCompletion: '2024-01-16 12:00:00',
+      dataset: 'Clinical Text Dataset v3.0',
+      epochs: 50,
+      currentEpoch: 50
     }
   ]);
 
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
-  };
-
-  const handleFeatureClick = (feature) => {
-    setSelectedFeature(feature);
-  };
-
-  const handleDiagnosis = () => {
-    setDiagnosisDialog(true);
-  };
-
-  const handleModelAnalysis = () => {
-    setModelDialog(true);
-  };
-
-  const handleTraining = () => {
-    setTrainingDialog(true);
-  };
-
-  const startAnalysis = () => {
-    setAnalyzing(true);
-    setAnalysisProgress(0);
-    
-    // Simulate analysis progress
-    const interval = setInterval(() => {
-      setAnalysisProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setAnalyzing(false);
-          return 100;
-        }
-        return prev + 5;
-      });
-    }, 200);
-  };
+  const [aiInsights, setAiInsights] = useState([
+    {
+      id: 1,
+      type: 'diagnosis',
+      patientId: 'P001',
+      confidence: 0.89,
+      recommendation: 'High probability of Type 2 Diabetes based on symptoms and lab results',
+      timestamp: '2024-01-20 14:30:00',
+      status: 'reviewed'
+    },
+    {
+      id: 2,
+      type: 'treatment',
+      patientId: 'P002',
+      confidence: 0.92,
+      recommendation: 'Recommended medication adjustment based on recent blood pressure readings',
+      timestamp: '2024-01-20 13:45:00',
+      status: 'pending'
+    }
+  ]);
 
   const getStatusColor = (status) => {
     switch (status) {
       case 'active': return 'success';
-      case 'development': return 'warning';
-      case 'production': return 'success';
-      case 'testing': return 'info';
+      case 'training': return 'warning';
+      case 'completed': return 'info';
+      case 'failed': return 'error';
+      case 'reviewed': return 'success';
+      case 'pending': return 'warning';
       default: return 'default';
     }
   };
 
-  const getAccuracyColor = (accuracy) => {
-    if (accuracy >= 95) return 'success';
-    if (accuracy >= 90) return 'primary';
-    if (accuracy >= 85) return 'warning';
-    return 'error';
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'active': return <CheckCircle />;
+      case 'training': return <Build />;
+      case 'completed': return <CheckCircle />;
+      case 'failed': return <Warning />;
+      case 'reviewed': return <CheckCircle />;
+      case 'pending': return <Schedule />;
+      default: return <Info />;
+    }
+  };
+
+  const handleStartTraining = (modelId) => {
+    // Implement training start logic
+    console.log('Starting training for model:', modelId);
+  };
+
+  const handleModelDeploy = (modelId) => {
+    // Implement model deployment logic
+    console.log('Deploying model:', modelId);
+  };
+
+  const handleInsightReview = (insightId) => {
+    // Implement insight review logic
+    console.log('Reviewing insight:', insightId);
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+    <Container maxWidth="lg">
+      <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Advanced AI Features
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button
-            variant="outlined"
-            startIcon={<Compare />}
-            onClick={handleModelAnalysis}
-          >
-            Model Analysis
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<Psychology />}
-            onClick={handleDiagnosis}
-          >
-            AI Diagnosis
-          </Button>
-        </Box>
+        <Typography variant="body1" color="text.secondary">
+          Manage AI models, training jobs, and advanced healthcare AI tools
+        </Typography>
       </Box>
 
+      {/* Tabs */}
       <Paper sx={{ mb: 3 }}>
-        <Tabs value={activeTab} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tab label="AI Features" />
-          <Tab label="Model Performance" />
-          <Tab label="Training & Development" />
-          <Tab label="Research & Insights" />
+        <Tabs 
+          value={selectedTab} 
+          onChange={(e, newValue) => setSelectedTab(newValue)}
+          variant="scrollable"
+          scrollButtons="auto"
+        >
+          <Tab label="AI Models" />
+          <Tab label="Training Jobs" />
+          <Tab label="AI Insights" />
+          <Tab label="Model Comparison" />
         </Tabs>
       </Paper>
 
-      {activeTab === 0 && (
+      {/* AI Models */}
+      {selectedTab === 0 && (
         <Grid container spacing={3}>
-          {aiFeatures.map((feature) => (
-            <Grid item xs={12} md={6} lg={4} key={feature.id}>
-              <Card 
-                sx={{ 
-                  height: '100%',
-                  cursor: 'pointer',
-                  '&:hover': { boxShadow: 4 }
-                }}
-                onClick={() => handleFeatureClick(feature)}
-              >
+          {aiModels.map((model) => (
+            <Grid item xs={12} md={6} lg={4} key={model.id}>
+              <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      {feature.icon}
-                      <Typography variant="h6" component="h3">
-                        {feature.title}
-                      </Typography>
-                    </Box>
-                    <Chip 
-                      label={feature.status} 
-                      size="small" 
-                      color={getStatusColor(feature.status)}
+                    <Typography variant="h6">{model.name}</Typography>
+                    <Chip
+                      icon={getStatusIcon(model.status)}
+                      label={model.status}
+                      color={getStatusColor(model.status)}
+                      size="small"
                     />
                   </Box>
-
+                  
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    {feature.description}
+                    {model.description}
                   </Typography>
 
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="caption" color="text.secondary">
-                      Updated: {feature.lastUpdated}
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" gutterBottom>
+                      Accuracy: {model.accuracy}%
                     </Typography>
-                    <Chip 
-                      label={`${feature.accuracy}%`} 
-                      size="small" 
-                      color={getAccuracyColor(feature.accuracy)}
+                    <LinearProgress 
+                      variant="determinate" 
+                      value={model.accuracy} 
+                      sx={{ height: 8, borderRadius: 4 }}
                     />
                   </Box>
 
-                  <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                    {feature.features.map((feat) => (
-                      <Chip key={feat} label={feat} size="small" variant="outlined" />
-                    ))}
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" gutterBottom>
+                      Performance Metrics:
+                    </Typography>
+                    <Grid container spacing={1}>
+                      <Grid item xs={4}>
+                        <Typography variant="caption" color="text.secondary">
+                          Precision
+                        </Typography>
+                        <Typography variant="body2">
+                          {(model.performance.precision * 100).toFixed(1)}%
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={4}>
+                        <Typography variant="caption" color="text.secondary">
+                          Recall
+                        </Typography>
+                        <Typography variant="body2">
+                          {(model.performance.recall * 100).toFixed(1)}%
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={4}>
+                        <Typography variant="caption" color="text.secondary">
+                          F1 Score
+                        </Typography>
+                        <Typography variant="body2">
+                          {(model.performance.f1Score * 100).toFixed(1)}%
+                        </Typography>
+                      </Grid>
+                    </Grid>
                   </Box>
 
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="caption" color="text.secondary">
-                      {feature.category}
-                    </Typography>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <IconButton size="small">
-                        <Visibility fontSize="small" />
-                      </IconButton>
-                      <IconButton size="small">
-                        <Settings fontSize="small" />
-                      </IconButton>
-                      <IconButton size="small">
-                        <PlayArrow fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  </Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Last updated: {new Date(model.lastUpdated).toLocaleDateString()}
+                  </Typography>
                 </CardContent>
+                <CardActions>
+                  <Button size="small" onClick={() => handleModelDeploy(model.id)}>
+                    Deploy
+                  </Button>
+                  <Button size="small" onClick={() => handleStartTraining(model.id)}>
+                    Retrain
+                  </Button>
+                  <Button size="small">
+                    View Details
+                  </Button>
+                </CardActions>
               </Card>
             </Grid>
           ))}
         </Grid>
       )}
 
-      {activeTab === 1 && (
-        <Box>
-          <Typography variant="h6" gutterBottom>Model Performance Metrics</Typography>
-          <Grid container spacing={3}>
-            {modelPerformance.map((model) => (
-              <Grid item xs={12} md={6} lg={4} key={model.model}>
-                <Card>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                      <Typography variant="h6">{model.model}</Typography>
-                      <Chip label={model.status} size="small" color={getStatusColor(model.status)} />
-                    </Box>
-                    
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Accuracy: <strong>{model.accuracy}%</strong>
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Precision: <strong>{model.precision}%</strong>
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Recall: <strong>{model.recall}%</strong>
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        F1 Score: <strong>{model.f1Score}%</strong>
-                      </Typography>
-                    </Box>
-
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Button size="small" variant="outlined">Compare</Button>
-                      <Button size="small" variant="outlined">Deploy</Button>
-                      <Button size="small" variant="outlined">Retrain</Button>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-      )}
-
-      {activeTab === 2 && (
-        <Box>
-          <Typography variant="h6" gutterBottom>AI Training & Development</Typography>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>Federated Learning</Typography>
-                  <Typography variant="body2" color="text.secondary" paragraph>
-                    Train AI models across multiple institutions while keeping data local and secure.
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button variant="contained" startIcon={<PlayArrow />}>
-                      Start Training
-                    </Button>
-                    <Button variant="outlined">
-                      View Progress
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>Model Validation</Typography>
-                  <Typography variant="body2" color="text.secondary" paragraph>
-                    Validate model performance against clinical standards and real-world data.
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button variant="contained" startIcon={<Science />}>
-                      Validate
-                    </Button>
-                    <Button variant="outlined">
-                      View Results
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </Box>
-      )}
-
-      {activeTab === 3 && (
-        <Box>
-          <Typography variant="h6" gutterBottom>Research & Clinical Insights</Typography>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={8}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>Latest Research</Typography>
-                  <List>
-                    <ListItem>
-                      <ListItemIcon>
-                        <Info color="primary" />
-                      </ListItemIcon>
-                      <ListItemText 
-                        primary="New AI model shows 95% accuracy in early cancer detection"
-                        secondary="Published in Nature Medicine - 2 days ago"
-                      />
-                    </ListItem>
-                    <ListItem>
-                      <ListItemIcon>
-                        <Warning color="warning" />
-                      </ListItemIcon>
-                      <ListItemText 
-                        primary="Updated guidelines for diabetes management with AI assistance"
-                        secondary="WHO Guidelines - 1 week ago"
-                      />
-                    </ListItem>
-                    <ListItem>
-                      <ListItemIcon>
-                        <CheckCircle color="success" />
-                      </ListItemIcon>
-                      <ListItemText 
-                        primary="FDA approves new AI-powered diagnostic tool"
-                        secondary="FDA Approval - 2 weeks ago"
-                      />
-                    </ListItem>
-                  </List>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>Knowledge Base</Typography>
-                  <Typography variant="body2" color="text.secondary" paragraph>
-                    Last updated: 2 hours ago
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <Chip label="PubMed Articles: 2.3M+" color="primary" />
-                    <Chip label="Clinical Trials: 45K+" color="secondary" />
-                    <Chip label="FDA Guidelines: 12K+" color="success" />
-                    <Chip label="WHO Reports: 8K+" color="info" />
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </Box>
-      )}
-
-      {/* AI Diagnosis Dialog */}
-      <Dialog open={diagnosisDialog} onClose={() => setDiagnosisDialog(false)} maxWidth="md" fullWidth>
-        <DialogTitle>AI-Powered Diagnosis</DialogTitle>
-        <DialogContent>
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Upload medical images or describe symptoms for AI analysis:
-            </Typography>
-            
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Analysis Type</InputLabel>
-              <Select label="Analysis Type" defaultValue="symptoms">
-                <MenuItem value="symptoms">Symptom Analysis</MenuItem>
-                <MenuItem value="imaging">Medical Imaging</MenuItem>
-                <MenuItem value="lab">Lab Results</MenuItem>
-                <MenuItem value="comprehensive">Comprehensive Analysis</MenuItem>
-              </Select>
-            </FormControl>
-
-            <TextField
-              fullWidth
-              label="Patient Symptoms"
-              multiline
-              rows={4}
-              placeholder="Describe the symptoms in detail..."
-              sx={{ mb: 2 }}
-            />
-
-            <Box sx={{ border: '2px dashed', borderColor: 'grey.300', borderRadius: 2, p: 3, textAlign: 'center', mb: 2 }}>
-              <Button variant="outlined" startIcon={<CloudUpload />}>
-                Upload Medical Images
-              </Button>
-              <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                Supported: X-Ray, MRI, CT Scan, Ultrasound (Max 50MB)
-              </Typography>
-            </Box>
-
-            <FormControlLabel
-              control={<Switch defaultChecked />}
-              label="Include research insights"
-            />
-
-            {analyzing && (
-              <Box sx={{ mt: 2 }}>
-                <LinearProgress variant="determinate" value={analysisProgress} />
-                <Typography variant="caption" sx={{ mt: 1 }}>
-                  Analyzing... {analysisProgress}%
+      {/* Training Jobs */}
+      {selectedTab === 1 && (
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Training Jobs
                 </Typography>
-              </Box>
-            )}
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDiagnosisDialog(false)}>Cancel</Button>
-          <Button variant="contained" onClick={startAnalysis} disabled={analyzing}>
-            Start Analysis
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Model Analysis Dialog */}
-      <Dialog open={modelDialog} onClose={() => setModelDialog(false)} maxWidth="lg" fullWidth>
-        <DialogTitle>Model Performance Analysis</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Typography variant="h6" gutterBottom>Model Comparison</Typography>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Compare different AI models for your specific use case:
-                </Typography>
-              </Box>
-              
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel>Primary Model</InputLabel>
-                <Select label="Primary Model" defaultValue="densenet">
-                  <MenuItem value="densenet">DenseNet121</MenuItem>
-                  <MenuItem value="resnet">ResNet50</MenuItem>
-                  <MenuItem value="efficientnet">EfficientNet</MenuItem>
-                </Select>
-              </FormControl>
-
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel>Comparison Model</InputLabel>
-                <Select label="Comparison Model" defaultValue="resnet">
-                  <MenuItem value="densenet">DenseNet121</MenuItem>
-                  <MenuItem value="resnet">ResNet50</MenuItem>
-                  <MenuItem value="efficientnet">EfficientNet</MenuItem>
-                </Select>
-              </FormControl>
-
-              <Button variant="contained" fullWidth>
-                Compare Models
-              </Button>
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <Typography variant="h6" gutterBottom>Performance Metrics</Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Box>
-                  <Typography variant="body2">Accuracy</Typography>
-                  <LinearProgress variant="determinate" value={94} sx={{ height: 8 }} />
-                  <Typography variant="caption">94%</Typography>
-                </Box>
-                <Box>
-                  <Typography variant="body2">Precision</Typography>
-                  <LinearProgress variant="determinate" value={92} sx={{ height: 8 }} />
-                  <Typography variant="caption">92%</Typography>
-                </Box>
-                <Box>
-                  <Typography variant="body2">Recall</Typography>
-                  <LinearProgress variant="determinate" value={93} sx={{ height: 8 }} />
-                  <Typography variant="caption">93%</Typography>
-                </Box>
-                <Box>
-                  <Typography variant="body2">F1 Score</Typography>
-                  <LinearProgress variant="determinate" value={92} sx={{ height: 8 }} />
-                  <Typography variant="caption">92%</Typography>
-                </Box>
-              </Box>
-            </Grid>
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Model</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Progress</TableCell>
+                        <TableCell>Dataset</TableCell>
+                        <TableCell>Epochs</TableCell>
+                        <TableCell>Estimated Completion</TableCell>
+                        <TableCell>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {trainingJobs.map((job) => (
+                        <TableRow key={job.id}>
+                          <TableCell>
+                            <Typography variant="subtitle2">{job.modelName}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              icon={getStatusIcon(job.status)}
+                              label={job.status}
+                              color={getStatusColor(job.status)}
+                              size="small"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <LinearProgress
+                                variant="determinate"
+                                value={job.progress}
+                                sx={{ width: 60, mr: 1 }}
+                              />
+                              <Typography variant="body2">{job.progress}%</Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">{job.dataset}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {job.currentEpoch}/{job.epochs}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {new Date(job.estimatedCompletion).toLocaleString()}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                              <Button size="small" variant="outlined">
+                                View Logs
+                              </Button>
+                              {job.status === 'training' && (
+                                <Button size="small" color="error">
+                                  Stop
+                                </Button>
+                              )}
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
           </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setModelDialog(false)}>Close</Button>
-          <Button variant="contained">Export Report</Button>
-        </DialogActions>
-      </Dialog>
+        </Grid>
+      )}
 
-      {/* Feature Details Dialog */}
-      <Dialog open={!!selectedFeature} onClose={() => setSelectedFeature(null)} maxWidth="md" fullWidth>
-        {selectedFeature && (
-          <>
-            <DialogTitle>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h5">{selectedFeature.title}</Typography>
-                <Chip label={selectedFeature.status} color={getStatusColor(selectedFeature.status)} />
-              </Box>
-            </DialogTitle>
-            <DialogContent>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={8}>
-                  <Typography variant="h6" gutterBottom>Description</Typography>
-                  <Typography variant="body2" paragraph>
-                    {selectedFeature.description}
-                  </Typography>
-                  
-                  <Typography variant="h6" gutterBottom>Features</Typography>
-                  <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                    {selectedFeature.features.map((feat) => (
-                      <Chip key={feat} label={feat} size="small" />
-                    ))}
-                  </Box>
-
-                  <Typography variant="h6" gutterBottom>Performance</Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                    <Typography variant="body2">
-                      Accuracy: <strong>{selectedFeature.accuracy}%</strong>
+      {/* AI Insights */}
+      {selectedTab === 2 && (
+        <Grid container spacing={3}>
+          {aiInsights.map((insight) => (
+            <Grid item xs={12} md={6} key={insight.id}>
+              <Card>
+                <CardContent>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                    <Typography variant="h6" sx={{ textTransform: 'capitalize' }}>
+                      {insight.type} Insight
                     </Typography>
-                    <Chip 
-                      label={`${selectedFeature.accuracy}%`} 
-                      size="small" 
-                      color={getAccuracyColor(selectedFeature.accuracy)}
+                    <Chip
+                      icon={getStatusIcon(insight.status)}
+                      label={insight.status}
+                      color={getStatusColor(insight.status)}
+                      size="small"
                     />
                   </Box>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <Typography variant="h6" gutterBottom>Quick Actions</Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Button variant="contained" startIcon={<PlayArrow />}>
-                      Run Analysis
-                    </Button>
-                    <Button variant="outlined" startIcon={<Settings />}>
-                      Configure
-                    </Button>
-                    <Button variant="outlined" startIcon={<Compare />}>
-                      Compare
-                    </Button>
-                    <Button variant="outlined" startIcon={<School />}>
-                      Train
-                    </Button>
+                  
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    Patient ID: {insight.patientId}
+                  </Typography>
+
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" gutterBottom>
+                      Confidence: {(insight.confidence * 100).toFixed(1)}%
+                    </Typography>
+                    <LinearProgress 
+                      variant="determinate" 
+                      value={insight.confidence * 100} 
+                      sx={{ height: 8, borderRadius: 4 }}
+                    />
                   </Box>
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setSelectedFeature(null)}>Close</Button>
-            </DialogActions>
-          </>
-        )}
-      </Dialog>
-    </Box>
+
+                  <Typography variant="body2" paragraph>
+                    <strong>Recommendation:</strong> {insight.recommendation}
+                  </Typography>
+
+                  <Typography variant="caption" color="text.secondary">
+                    Generated: {new Date(insight.timestamp).toLocaleString()}
+                  </Typography>
+                </CardContent>
+                <CardActions>
+                  <Button size="small" onClick={() => handleInsightReview(insight.id)}>
+                    Review
+                  </Button>
+                  <Button size="small">
+                    View Details
+                  </Button>
+                  <Button size="small">
+                    Apply
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
+
+      {/* Model Comparison */}
+      {selectedTab === 3 && (
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Model Performance Comparison
+                </Typography>
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Model</TableCell>
+                        <TableCell>Type</TableCell>
+                        <TableCell>Accuracy</TableCell>
+                        <TableCell>Precision</TableCell>
+                        <TableCell>Recall</TableCell>
+                        <TableCell>F1 Score</TableCell>
+                        <TableCell>Status</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {aiModels.map((model) => (
+                        <TableRow key={model.id}>
+                          <TableCell>
+                            <Typography variant="subtitle2">{model.name}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip label={model.type} size="small" variant="outlined" />
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">{model.accuracy}%</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {(model.performance.precision * 100).toFixed(1)}%
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {(model.performance.recall * 100).toFixed(1)}%
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {(model.performance.f1Score * 100).toFixed(1)}%
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              icon={getStatusIcon(model.status)}
+                              label={model.status}
+                              color={getStatusColor(model.status)}
+                              size="small"
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      )}
+    </Container>
   );
 };
 

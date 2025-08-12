@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8080',
+  baseURL: process.env.REACT_APP_API_URL || 'https://medai-production-3c09.up.railway.app',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

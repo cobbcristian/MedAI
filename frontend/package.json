@@ -40,6 +40,8 @@
     "react-virtualized": "^9.22.5",
     "react-webcam": "^7.1.1",
     "react-window": "^1.8.8",
+    "simple-peer": "^9.11.1",
+    "webrtc-adapter": "^8.2.3",
     "react-window-infinite-loader": "^1.0.7",
     "recharts": "^2.8.0",
     "socket.io-client": "^4.7.2",

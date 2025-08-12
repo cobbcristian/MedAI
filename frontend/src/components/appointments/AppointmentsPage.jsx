@@ -1,12 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Container,
+  Typography,
+  Paper,
   Grid,
   Card,
   CardContent,
-  Typography,
+  CardActions,
   Button,
   Box,
+  Chip,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -16,112 +24,182 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Chip,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
   Alert,
-  CircularProgress,
+  LinearProgress,
+  Divider,
   Tabs,
   Tab,
-  Paper,
-  Divider,
   Avatar,
   Badge,
-  Stepper,
-  Step,
-  StepLabel,
-  StepContent,
+  Calendar,
+  CalendarGrid,
+  CalendarCell,
+  CalendarHeader
 } from '@mui/material';
 import {
-  CalendarToday,
   Schedule,
-  Person,
   VideoCall,
-  Phone,
-  LocationOn,
+  Person,
+  LocalHospital,
+  Add,
   Edit,
   Delete,
-  Add,
+  Visibility,
   CheckCircle,
-  Cancel,
   Warning,
   Info,
   AccessTime,
+  LocationOn,
+  Phone,
+  Email,
+  CalendarToday,
   Event,
   Notifications,
+  ConfirmationNumber,
+  Payment,
+  Receipt
 } from '@mui/icons-material';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { format, addDays, isAfter, isBefore } from 'date-fns';
-
-// Mock data for demonstration
-const mockDoctors = [
-  { id: 1, name: 'Dr. Sarah Johnson', specialty: 'Cardiology', avatar: 'SJ', available: true },
-  { id: 2, name: 'Dr. Michael Chen', specialty: 'Dermatology', avatar: 'MC', available: true },
-  { id: 3, name: 'Dr. Emily Rodriguez', specialty: 'Pediatrics', avatar: 'ER', available: false },
-  { id: 4, name: 'Dr. James Wilson', specialty: 'Neurology', avatar: 'JW', available: true },
-];
-
-const mockAppointments = [
-  {
-    id: 1,
-    doctor: mockDoctors[0],
-    date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
-    time: '10:00 AM',
-    type: 'video',
-    status: 'confirmed',
-    notes: 'Follow-up consultation for heart condition',
-  },
-  {
-    id: 2,
-    doctor: mockDoctors[1],
-    date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
-    time: '2:30 PM',
-    type: 'in-person',
-    status: 'pending',
-    notes: 'Skin condition evaluation',
-  },
-];
+import api from '../../services/api';
 
 const AppointmentsPage = () => {
-  const [appointments, setAppointments] = useState(mockAppointments);
-  const [doctors, setDoctors] = useState(mockDoctors);
+  const [appointments, setAppointments] = useState([
+    {
+      id: 1,
+      type: 'consultation',
+      title: 'Follow-up Consultation',
+      date: '2024-01-20',
+      time: '14:00',
+      duration: 30,
+      doctor: 'Dr. Sarah Johnson',
+      specialty: 'Cardiology',
+      status: 'confirmed',
+      patient: 'John Smith',
+      notes: 'Review blood pressure medication',
+      location: 'Virtual',
+      meetingLink: 'https://meet.google.com/abc-defg-hij',
+      cost: 150
+    },
+    {
+      id: 2,
+      type: 'checkup',
+      title: 'Annual Physical',
+      date: '2024-01-25',
+      time: '10:30',
+      duration: 60,
+      doctor: 'Dr. Michael Chen',
+      specialty: 'Primary Care',
+      status: 'scheduled',
+      patient: 'John Smith',
+      notes: 'Complete annual physical examination',
+      location: 'In-Person',
+      cost: 200
+    },
+    {
+      id: 3,
+      type: 'emergency',
+      title: 'Emergency Consultation',
+      date: '2024-01-18',
+      time: '09:00',
+      duration: 45,
+      doctor: 'Dr. Emily Davis',
+      specialty: 'Emergency Medicine',
+      status: 'completed',
+      patient: 'John Smith',
+      notes: 'Chest pain evaluation',
+      location: 'Virtual',
+      cost: 300
+    }
+  ]);
+
   const [selectedTab, setSelectedTab] = useState(0);
-  const [openScheduleDialog, setOpenScheduleDialog] = useState(false);
-  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [bookingDialog, setBookingDialog] = useState(false);
+  const [viewDialog, setViewDialog] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [scheduleStep, setScheduleStep] = useState(0);
-  
-  // Form states
-  const [selectedDoctor, setSelectedDoctor] = useState('');
+  const [booking, setBooking] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTime, setSelectedTime] = useState('');
-  const [appointmentType, setAppointmentType] = useState('video');
-  const [notes, setNotes] = useState('');
 
-  const handleScheduleAppointment = () => {
-    setOpenScheduleDialog(true);
-    setScheduleStep(0);
-    setSelectedDoctor('');
-    setSelectedDate(new Date());
-    setSelectedTime('');
-    setAppointmentType('video');
-    setNotes('');
+  const appointmentTypes = [
+    { value: 'consultation', label: 'Consultation', icon: <Person /> },
+    { value: 'checkup', label: 'Checkup', icon: <LocalHospital /> },
+    { value: 'emergency', label: 'Emergency', icon: <Warning /> },
+    { value: 'followup', label: 'Follow-up', icon: <Schedule /> },
+    { value: 'surgery', label: 'Surgery', icon: <LocalHospital /> },
+    { value: 'imaging', label: 'Imaging', icon: <Info /> }
+  ];
+
+  const doctors = [
+    { id: 1, name: 'Dr. Sarah Johnson', specialty: 'Cardiology', available: true },
+    { id: 2, name: 'Dr. Michael Chen', specialty: 'Primary Care', available: true },
+    { id: 3, name: 'Dr. Emily Davis', specialty: 'Emergency Medicine', available: true },
+    { id: 4, name: 'Dr. Lisa Rodriguez', specialty: 'Dermatology', available: false }
+  ];
+
+  const timeSlots = [
+    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+    '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
+  ];
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'confirmed': return 'success';
+      case 'scheduled': return 'primary';
+      case 'pending': return 'warning';
+      case 'completed': return 'info';
+      case 'cancelled': return 'error';
+      default: return 'default';
+    }
   };
 
-  const handleEditAppointment = (appointment) => {
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'confirmed': return <CheckCircle />;
+      case 'scheduled': return <Schedule />;
+      case 'pending': return <Warning />;
+      case 'completed': return <CheckCircle />;
+      case 'cancelled': return <Warning />;
+      default: return <Info />;
+    }
+  };
+
+  const getTypeIcon = (type) => {
+    switch (type) {
+      case 'consultation': return <Person />;
+      case 'checkup': return <LocalHospital />;
+      case 'emergency': return <Warning />;
+      case 'followup': return <Schedule />;
+      case 'surgery': return <LocalHospital />;
+      case 'imaging': return <Info />;
+      default: return <Event />;
+    }
+  };
+
+  const handleBookAppointment = async (appointmentData) => {
+    setBooking(true);
+
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const newAppointment = {
+        id: appointments.length + 1,
+        ...appointmentData,
+        status: 'scheduled',
+        patient: 'John Smith'
+      };
+
+      setAppointments([newAppointment, ...appointments]);
+      setBookingDialog(false);
+    } catch (error) {
+      console.error('Booking failed:', error);
+    } finally {
+      setBooking(false);
+    }
+  };
+
+  const handleViewAppointment = (appointment) => {
     setSelectedAppointment(appointment);
-    setSelectedDoctor(appointment.doctor.id);
-    setSelectedDate(appointment.date);
-    setSelectedTime(appointment.time);
-    setAppointmentType(appointment.type);
-    setNotes(appointment.notes);
-    setOpenEditDialog(true);
+    setViewDialog(true);
   };
 
   const handleCancelAppointment = (appointmentId) => {
@@ -132,479 +210,452 @@ const AppointmentsPage = () => {
     ));
   };
 
-  const handleConfirmSchedule = () => {
-    setLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      const newAppointment = {
-        id: Date.now(),
-        doctor: doctors.find(d => d.id === selectedDoctor),
-        date: selectedDate,
-        time: selectedTime,
-        type: appointmentType,
-        status: 'confirmed',
-        notes: notes,
-      };
-      
-      setAppointments([...appointments, newAppointment]);
-      setOpenScheduleDialog(false);
-      setLoading(false);
-      setScheduleStep(0);
-    }, 1000);
+  const handleRescheduleAppointment = (appointmentId) => {
+    // Implementation for rescheduling
+    console.log('Rescheduling appointment:', appointmentId);
   };
 
-  const handleConfirmEdit = () => {
-    setLoading(true);
-    
-    setTimeout(() => {
-      setAppointments(appointments.map(apt => 
-        apt.id === selectedAppointment.id
-          ? {
-              ...apt,
-              doctor: doctors.find(d => d.id === selectedDoctor),
-              date: selectedDate,
-              time: selectedTime,
-              type: appointmentType,
-              notes: notes,
-            }
-          : apt
-      ));
-      setOpenEditDialog(false);
-      setLoading(false);
-    }, 1000);
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'confirmed': return 'success';
-      case 'pending': return 'warning';
-      case 'cancelled': return 'error';
-      default: return 'default';
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'confirmed': return <CheckCircle />;
-      case 'pending': return <Schedule />;
-      case 'cancelled': return <Cancel />;
-      default: return <Info />;
-    }
-  };
-
-  const getTypeIcon = (type) => {
-    return type === 'video' ? <VideoCall /> : <LocationOn />;
-  };
+  const filteredAppointments = selectedTab === 0 
+    ? appointments 
+    : appointments.filter(apt => apt.type === appointmentTypes[selectedTab - 1]?.value);
 
   const upcomingAppointments = appointments.filter(apt => 
-    apt.status !== 'cancelled' && isAfter(apt.date, new Date())
+    apt.status === 'scheduled' || apt.status === 'confirmed'
   );
 
-  const pastAppointments = appointments.filter(apt => 
-    isBefore(apt.date, new Date())
-  );
-
-  const cancelledAppointments = appointments.filter(apt => 
-    apt.status === 'cancelled'
+  const completedAppointments = appointments.filter(apt => 
+    apt.status === 'completed'
   );
 
   return (
     <Container maxWidth="lg">
-      <Box sx={{ mt: 4, mb: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            Appointments
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={handleScheduleAppointment}
-            sx={{ borderRadius: 2 }}
-          >
-            Schedule Appointment
-          </Button>
-        </Box>
-
-        <Paper sx={{ mb: 3 }}>
-          <Tabs value={selectedTab} onChange={(e, newValue) => setSelectedTab(newValue)}>
-            <Tab label={`Upcoming (${upcomingAppointments.length})`} />
-            <Tab label={`Past (${pastAppointments.length})`} />
-            <Tab label={`Cancelled (${cancelledAppointments.length})`} />
-          </Tabs>
-        </Paper>
-
-        {/* Upcoming Appointments */}
-        {selectedTab === 0 && (
-          <Grid container spacing={3}>
-            {upcomingAppointments.length === 0 ? (
-              <Grid item xs={12}>
-                <Card>
-                  <CardContent sx={{ textAlign: 'center', py: 4 }}>
-                    <CalendarToday sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-                    <Typography variant="h6" color="text.secondary" gutterBottom>
-                      No upcoming appointments
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Schedule your first appointment to get started
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ) : (
-              upcomingAppointments.map((appointment) => (
-                <Grid item xs={12} md={6} key={appointment.id}>
-                  <Card sx={{ height: '100%' }}>
-                    <CardContent>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                          <Avatar sx={{ bgcolor: 'primary.main' }}>
-                            {appointment.doctor.avatar}
-                          </Avatar>
-                          <Box>
-                            <Typography variant="h6">{appointment.doctor.name}</Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {appointment.doctor.specialty}
-                            </Typography>
-                          </Box>
-                        </Box>
-                        <Chip
-                          icon={getStatusIcon(appointment.status)}
-                          label={appointment.status}
-                          color={getStatusColor(appointment.status)}
-                          size="small"
-                        />
-                      </Box>
-                      
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                        <Event color="action" />
-                        <Typography variant="body2">
-                          {format(appointment.date, 'EEEE, MMMM d, yyyy')}
-                        </Typography>
-                      </Box>
-                      
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                        <AccessTime color="action" />
-                        <Typography variant="body2">{appointment.time}</Typography>
-                        {getTypeIcon(appointment.type)}
-                        <Typography variant="body2" color="text.secondary">
-                          {appointment.type === 'video' ? 'Video Call' : 'In-Person'}
-                        </Typography>
-                      </Box>
-                      
-                      {appointment.notes && (
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                          {appointment.notes}
-                        </Typography>
-                      )}
-                      
-                      <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-                        <Button
-                          size="small"
-                          startIcon={<Edit />}
-                          onClick={() => handleEditAppointment(appointment)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          size="small"
-                          color="error"
-                          startIcon={<Cancel />}
-                          onClick={() => handleCancelAppointment(appointment.id)}
-                        >
-                          Cancel
-                        </Button>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))
-            )}
-          </Grid>
-        )}
-
-        {/* Past Appointments */}
-        {selectedTab === 1 && (
-          <Grid container spacing={3}>
-            {pastAppointments.map((appointment) => (
-              <Grid item xs={12} md={6} key={appointment.id}>
-                <Card sx={{ height: '100%', opacity: 0.7 }}>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Avatar sx={{ bgcolor: 'grey.400' }}>
-                          {appointment.doctor.avatar}
-                        </Avatar>
-                        <Box>
-                          <Typography variant="h6">{appointment.doctor.name}</Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {appointment.doctor.specialty}
-                          </Typography>
-                        </Box>
-                      </Box>
-                      <Chip
-                        icon={<CheckCircle />}
-                        label="Completed"
-                        color="success"
-                        size="small"
-                      />
-                    </Box>
-                    
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                      <Event color="action" />
-                      <Typography variant="body2">
-                        {format(appointment.date, 'EEEE, MMMM d, yyyy')}
-                      </Typography>
-                    </Box>
-                    
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <AccessTime color="action" />
-                      <Typography variant="body2">{appointment.time}</Typography>
-                      {getTypeIcon(appointment.type)}
-                      <Typography variant="body2" color="text.secondary">
-                        {appointment.type === 'video' ? 'Video Call' : 'In-Person'}
-                      </Typography>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        )}
-
-        {/* Cancelled Appointments */}
-        {selectedTab === 2 && (
-          <Grid container spacing={3}>
-            {cancelledAppointments.map((appointment) => (
-              <Grid item xs={12} md={6} key={appointment.id}>
-                <Card sx={{ height: '100%', opacity: 0.7 }}>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Avatar sx={{ bgcolor: 'grey.400' }}>
-                          {appointment.doctor.avatar}
-                        </Avatar>
-                        <Box>
-                          <Typography variant="h6">{appointment.doctor.name}</Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {appointment.doctor.specialty}
-                          </Typography>
-                        </Box>
-                      </Box>
-                      <Chip
-                        icon={<Cancel />}
-                        label="Cancelled"
-                        color="error"
-                        size="small"
-                      />
-                    </Box>
-                    
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                      <Event color="action" />
-                      <Typography variant="body2">
-                        {format(appointment.date, 'EEEE, MMMM d, yyyy')}
-                      </Typography>
-                    </Box>
-                    
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <AccessTime color="action" />
-                      <Typography variant="body2">{appointment.time}</Typography>
-                      {getTypeIcon(appointment.type)}
-                      <Typography variant="body2" color="text.secondary">
-                        {appointment.type === 'video' ? 'Video Call' : 'In-Person'}
-                      </Typography>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        )}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4" component="h1">
+          Appointments
+        </Typography>
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          onClick={() => setBookingDialog(true)}
+        >
+          Book Appointment
+        </Button>
       </Box>
 
-      {/* Schedule Appointment Dialog */}
-      <Dialog open={openScheduleDialog} onClose={() => setOpenScheduleDialog(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Schedule New Appointment</DialogTitle>
-        <DialogContent>
-          <Stepper activeStep={scheduleStep} orientation="vertical">
-            <Step>
-              <StepLabel>Select Doctor</StepLabel>
-              <StepContent>
-                <FormControl fullWidth sx={{ mt: 2 }}>
-                  <InputLabel>Choose a doctor</InputLabel>
-                  <Select
-                    value={selectedDoctor}
-                    onChange={(e) => setSelectedDoctor(e.target.value)}
-                    label="Choose a doctor"
-                  >
-                    {doctors.filter(d => d.available).map((doctor) => (
-                      <MenuItem key={doctor.id} value={doctor.id}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                          <Avatar sx={{ width: 32, height: 32, fontSize: '0.875rem' }}>
-                            {doctor.avatar}
-                          </Avatar>
-                          <Box>
-                            <Typography variant="body1">{doctor.name}</Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {doctor.specialty}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <Box sx={{ mt: 2 }}>
-                  <Button
-                    variant="contained"
-                    onClick={() => setScheduleStep(1)}
-                    disabled={!selectedDoctor}
-                  >
-                    Next
-                  </Button>
+      {/* Quick Stats */}
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Schedule color="primary" sx={{ mr: 2 }} />
+                <Box>
+                  <Typography variant="h6">{upcomingAppointments.length}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Upcoming
+                  </Typography>
                 </Box>
-              </StepContent>
-            </Step>
-            
-            <Step>
-              <StepLabel>Select Date & Time</StepLabel>
-              <StepContent>
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                  <DateTimePicker
-                    label="Appointment Date & Time"
-                    value={selectedDate}
-                    onChange={setSelectedDate}
-                    minDateTime={new Date()}
-                    sx={{ width: '100%', mt: 2 }}
-                  />
-                </LocalizationProvider>
-                <Box sx={{ mt: 2 }}>
-                  <Button onClick={() => setScheduleStep(0)}>Back</Button>
-                  <Button
-                    variant="contained"
-                    onClick={() => setScheduleStep(2)}
-                    disabled={!selectedDate}
-                    sx={{ ml: 1 }}
-                  >
-                    Next
-                  </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <CheckCircle color="success" sx={{ mr: 2 }} />
+                <Box>
+                  <Typography variant="h6">{completedAppointments.length}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Completed
+                  </Typography>
                 </Box>
-              </StepContent>
-            </Step>
-            
-            <Step>
-              <StepLabel>Appointment Details</StepLabel>
-              <StepContent>
-                <FormControl fullWidth sx={{ mt: 2 }}>
-                  <InputLabel>Appointment Type</InputLabel>
-                  <Select
-                    value={appointmentType}
-                    onChange={(e) => setAppointmentType(e.target.value)}
-                    label="Appointment Type"
-                  >
-                    <MenuItem value="video">Video Call</MenuItem>
-                    <MenuItem value="in-person">In-Person</MenuItem>
-                  </Select>
-                </FormControl>
-                
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={3}
-                  label="Notes (Optional)"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  sx={{ mt: 2 }}
-                />
-                
-                <Box sx={{ mt: 2 }}>
-                  <Button onClick={() => setScheduleStep(1)}>Back</Button>
-                  <Button
-                    variant="contained"
-                    onClick={handleConfirmSchedule}
-                    disabled={loading}
-                    sx={{ ml: 1 }}
-                  >
-                    {loading ? <CircularProgress size={20} /> : 'Schedule Appointment'}
-                  </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <VideoCall color="info" sx={{ mr: 2 }} />
+                <Box>
+                  <Typography variant="h6">
+                    {appointments.filter(apt => apt.location === 'Virtual').length}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Virtual
+                  </Typography>
                 </Box>
-              </StepContent>
-            </Step>
-          </Stepper>
-        </DialogContent>
-      </Dialog>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <LocalHospital color="secondary" sx={{ mr: 2 }} />
+                <Box>
+                  <Typography variant="h6">
+                    {appointments.filter(apt => apt.location === 'In-Person').length}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    In-Person
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
 
-      {/* Edit Appointment Dialog */}
-      <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Edit Appointment</DialogTitle>
-        <DialogContent>
-          <FormControl fullWidth sx={{ mt: 2 }}>
-            <InputLabel>Choose a doctor</InputLabel>
-            <Select
-              value={selectedDoctor}
-              onChange={(e) => setSelectedDoctor(e.target.value)}
-              label="Choose a doctor"
-            >
-              {doctors.filter(d => d.available).map((doctor) => (
-                <MenuItem key={doctor.id} value={doctor.id}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Avatar sx={{ width: 32, height: 32, fontSize: '0.875rem' }}>
-                      {doctor.avatar}
-                    </Avatar>
-                    <Box>
-                      <Typography variant="body1">{doctor.name}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {doctor.specialty}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <DateTimePicker
-              label="Appointment Date & Time"
-              value={selectedDate}
-              onChange={setSelectedDate}
-              minDateTime={new Date()}
-              sx={{ width: '100%', mt: 2 }}
+      {/* Tabs */}
+      <Paper sx={{ mb: 3 }}>
+        <Tabs 
+          value={selectedTab} 
+          onChange={(e, newValue) => setSelectedTab(newValue)}
+          variant="scrollable"
+          scrollButtons="auto"
+        >
+          <Tab label="All Appointments" />
+          {appointmentTypes.map((type) => (
+            <Tab 
+              key={type.value} 
+              label={type.label}
+              icon={type.icon}
+              iconPosition="start"
             />
-          </LocalizationProvider>
-          
-          <FormControl fullWidth sx={{ mt: 2 }}>
-            <InputLabel>Appointment Type</InputLabel>
-            <Select
-              value={appointmentType}
-              onChange={(e) => setAppointmentType(e.target.value)}
-              label="Appointment Type"
-            >
-              <MenuItem value="video">Video Call</MenuItem>
-              <MenuItem value="in-person">In-Person</MenuItem>
-            </Select>
-          </FormControl>
-          
-          <TextField
-            fullWidth
-            multiline
-            rows={3}
-            label="Notes (Optional)"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            sx={{ mt: 2 }}
-          />
+          ))}
+        </Tabs>
+      </Paper>
+
+      {/* Appointments Grid */}
+      <Grid container spacing={3}>
+        {filteredAppointments.map((appointment) => (
+          <Grid item xs={12} sm={6} md={4} key={appointment.id}>
+            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  {getTypeIcon(appointment.type)}
+                  <Typography variant="h6" sx={{ ml: 1 }}>
+                    {appointment.title}
+                  </Typography>
+                </Box>
+                
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  {appointment.notes}
+                </Typography>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <Chip
+                    icon={getStatusIcon(appointment.status)}
+                    label={appointment.status}
+                    color={getStatusColor(appointment.status)}
+                    size="small"
+                  />
+                  <Typography variant="caption" sx={{ ml: 1 }}>
+                    {appointment.date} at {appointment.time}
+                  </Typography>
+                </Box>
+
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  <strong>Doctor:</strong> {appointment.doctor}
+                </Typography>
+
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  <strong>Duration:</strong> {appointment.duration} minutes
+                </Typography>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <Chip 
+                    label={appointment.location} 
+                    size="small" 
+                    variant="outlined"
+                    icon={appointment.location === 'Virtual' ? <VideoCall /> : <LocationOn />}
+                  />
+                  <Typography variant="caption" sx={{ ml: 1 }}>
+                    ${appointment.cost}
+                  </Typography>
+                </Box>
+              </CardContent>
+
+              <CardActions>
+                <Button 
+                  size="small" 
+                  startIcon={<Visibility />}
+                  onClick={() => handleViewAppointment(appointment)}
+                >
+                  View
+                </Button>
+                {appointment.status === 'scheduled' && (
+                  <Button 
+                    size="small" 
+                    startIcon={<Edit />}
+                    onClick={() => handleRescheduleAppointment(appointment.id)}
+                  >
+                    Reschedule
+                  </Button>
+                )}
+                {appointment.status !== 'cancelled' && appointment.status !== 'completed' && (
+                  <Button 
+                    size="small" 
+                    color="error"
+                    onClick={() => handleCancelAppointment(appointment.id)}
+                  >
+                    Cancel
+                  </Button>
+                )}
+                {appointment.location === 'Virtual' && appointment.meetingLink && (
+                  <Button 
+                    size="small" 
+                    variant="contained"
+                    startIcon={<VideoCall />}
+                    href={appointment.meetingLink}
+                    target="_blank"
+                  >
+                    Join
+                  </Button>
+                )}
+              </CardActions>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* Booking Dialog */}
+      <Dialog open={bookingDialog} onClose={() => setBookingDialog(false)} maxWidth="md" fullWidth>
+        <DialogTitle>Book New Appointment</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6" gutterBottom>Appointment Details</Typography>
+              
+              <TextField
+                fullWidth
+                label="Appointment Title"
+                placeholder="e.g., Follow-up Consultation"
+                sx={{ mb: 2 }}
+              />
+
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Appointment Type</InputLabel>
+                <Select label="Appointment Type">
+                  {appointmentTypes.map((type) => (
+                    <MenuItem key={type.value} value={type.value}>
+                      {type.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Select Doctor</InputLabel>
+                <Select label="Select Doctor">
+                  {doctors.filter(d => d.available).map((doctor) => (
+                    <MenuItem key={doctor.id} value={doctor.id}>
+                      {doctor.name} - {doctor.specialty}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <TextField
+                fullWidth
+                multiline
+                rows={3}
+                label="Notes"
+                placeholder="Describe your symptoms or reason for visit..."
+                sx={{ mb: 2 }}
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6" gutterBottom>Schedule</Typography>
+              
+              <TextField
+                fullWidth
+                type="date"
+                label="Date"
+                InputLabelProps={{ shrink: true }}
+                sx={{ mb: 2 }}
+              />
+
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Time Slot</InputLabel>
+                <Select label="Time Slot">
+                  {timeSlots.map((time) => (
+                    <MenuItem key={time} value={time}>
+                      {time}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Duration</InputLabel>
+                <Select label="Duration" defaultValue={30}>
+                  <MenuItem value={15}>15 minutes</MenuItem>
+                  <MenuItem value={30}>30 minutes</MenuItem>
+                  <MenuItem value={45}>45 minutes</MenuItem>
+                  <MenuItem value={60}>1 hour</MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Location</InputLabel>
+                <Select label="Location" defaultValue="virtual">
+                  <MenuItem value="virtual">Virtual (Video Call)</MenuItem>
+                  <MenuItem value="in-person">In-Person</MenuItem>
+                </Select>
+              </FormControl>
+
+              {booking && (
+                <Box sx={{ width: '100%' }}>
+                  <LinearProgress />
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    Booking appointment...
+                  </Typography>
+                </Box>
+              )}
+            </Grid>
+          </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenEditDialog(false)}>Cancel</Button>
-          <Button
-            variant="contained"
-            onClick={handleConfirmEdit}
-            disabled={loading}
+          <Button onClick={() => setBookingDialog(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            onClick={() => handleBookAppointment({
+              title: 'New Appointment',
+              type: 'consultation',
+              doctor: 'Dr. Sarah Johnson',
+              date: '2024-01-30',
+              time: '14:00',
+              duration: 30,
+              notes: 'General consultation',
+              location: 'Virtual',
+              cost: 150
+            })}
+            disabled={booking}
           >
-            {loading ? <CircularProgress size={20} /> : 'Save Changes'}
+            Book Appointment
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* View Appointment Dialog */}
+      <Dialog open={viewDialog} onClose={() => setViewDialog(false)} maxWidth="md" fullWidth>
+        {selectedAppointment && (
+          <>
+            <DialogTitle>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                {getTypeIcon(selectedAppointment.type)}
+                <Typography variant="h6" sx={{ ml: 1 }}>
+                  {selectedAppointment.title}
+                </Typography>
+              </Box>
+            </DialogTitle>
+            <DialogContent>
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="subtitle1" gutterBottom>Appointment Details</Typography>
+                  <List dense>
+                    <ListItem>
+                      <ListItemIcon>
+                        <CalendarToday />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Date & Time" 
+                        secondary={`${selectedAppointment.date} at ${selectedAppointment.time}`} 
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <AccessTime />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Duration" 
+                        secondary={`${selectedAppointment.duration} minutes`} 
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <Person />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Doctor" 
+                        secondary={selectedAppointment.doctor} 
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <LocationOn />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Location" 
+                        secondary={selectedAppointment.location} 
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <Payment />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary="Cost" 
+                        secondary={`$${selectedAppointment.cost}`} 
+                      />
+                    </ListItem>
+                  </List>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="subtitle1" gutterBottom>Status & Notes</Typography>
+                  <Box sx={{ mb: 2 }}>
+                    <Chip
+                      icon={getStatusIcon(selectedAppointment.status)}
+                      label={selectedAppointment.status}
+                      color={getStatusColor(selectedAppointment.status)}
+                      size="medium"
+                    />
+                  </Box>
+                  
+                  <Typography variant="body2" paragraph>
+                    <strong>Notes:</strong> {selectedAppointment.notes}
+                  </Typography>
+
+                  {selectedAppointment.meetingLink && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="subtitle2" gutterBottom>
+                        Meeting Link:
+                      </Typography>
+                      <Button
+                        variant="contained"
+                        startIcon={<VideoCall />}
+                        href={selectedAppointment.meetingLink}
+                        target="_blank"
+                        fullWidth
+                      >
+                        Join Video Call
+                      </Button>
+                    </Box>
+                  )}
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setViewDialog(false)}>Close</Button>
+              {selectedAppointment.status === 'scheduled' && (
+                <Button variant="outlined" startIcon={<Edit />}>
+                  Reschedule
+                </Button>
+              )}
+              {selectedAppointment.meetingLink && (
+                <Button variant="contained" startIcon={<VideoCall />}>
+                  Join Call
+                </Button>
+              )}
+            </DialogActions>
+          </>
+        )}
       </Dialog>
     </Container>
   );

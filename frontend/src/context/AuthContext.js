@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
 import api from '../services/api';
 
 const AuthContext = createContext();
@@ -104,7 +103,6 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('token', accessToken);
             localStorage.setItem('refreshToken', refreshToken);
 
-            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
             return api(originalRequest);
           } catch (refreshError) {
             dispatch({ type: 'LOGOUT' });
@@ -125,46 +123,36 @@ export const AuthProvider = ({ children }) => {
     };
   }, [state.token, state.refreshToken, navigate]);
 
-  // Check if user is authenticated on app load
+  // Check authentication status on mount
   useEffect(() => {
     const checkAuth = async () => {
-      if (state.token) {
-        try {
+      try {
+        if (state.token) {
           const response = await api.get('/api/auth/me');
           dispatch({
             type: 'LOGIN_SUCCESS',
             payload: {
-              user: response.data,
+              user: response.data.user,
               accessToken: state.token,
               refreshToken: state.refreshToken,
             },
           });
-        } catch (error) {
-          console.warn('API not available, switching to demo mode');
-          // If API is not available, switch to demo mode
+        } else {
+          // Set demo mode for development
           dispatch({
             type: 'SET_DEMO_MODE',
             payload: {
               id: 'demo-user',
               name: 'Demo User',
               email: 'demo@medai.com',
-              role: 'PATIENT',
-              isDemo: true
-            }
+              role: 'patient',
+              avatar: 'https://via.placeholder.com/150',
+            },
           });
         }
-      } else {
-        // If no token, set demo mode for immediate access
-        dispatch({
-          type: 'SET_DEMO_MODE',
-          payload: {
-            id: 'demo-user',
-            name: 'Demo User',
-            email: 'demo@medai.com',
-            role: 'PATIENT',
-            isDemo: true
-          }
-        });
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
     };
 
@@ -176,42 +164,21 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: 'SET_LOADING', payload: true });
       
       const response = await api.post('/api/auth/login', credentials);
-      const { accessToken, refreshToken, user } = response.data;
-
-      localStorage.setItem('token', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
+      const { user, accessToken, refreshToken } = response.data;
 
       dispatch({
         type: 'LOGIN_SUCCESS',
         payload: { user, accessToken, refreshToken },
       });
 
-      toast.success('Login successful!');
-      
-      // Redirect based on user role
-      if (user.role === 'PATIENT') {
-        navigate('/patient');
-      } else if (user.role === 'DOCTOR') {
-        navigate('/doctor');
-      } else if (user.role === 'ADMIN') {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
+      localStorage.setItem('token', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+
+      return { success: true };
     } catch (error) {
-      console.warn('API not available, switching to demo mode');
-      // If API fails, switch to demo mode
-      dispatch({
-        type: 'SET_DEMO_MODE',
-        payload: {
-          id: 'demo-user',
-          name: 'Demo User',
-          email: 'demo@medai.com',
-          role: 'PATIENT',
-          isDemo: true
-        }
-      });
-      navigate('/');
+      console.error('Login failed:', error);
+      dispatch({ type: 'SET_LOADING', payload: false });
+      return { success: false, error: error.response?.data?.message || 'Login failed' };
     }
   };
 
@@ -220,77 +187,70 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: 'SET_LOADING', payload: true });
       
       const response = await api.post('/api/auth/register', userData);
-      
-      toast.success('Registration successful! Please check your email for verification.');
-      navigate('/login');
-    } catch (error) {
-      toast.error('Registration service not available. Using demo mode.');
-      // Switch to demo mode if registration fails
+      const { user, accessToken, refreshToken } = response.data;
+
       dispatch({
-        type: 'SET_DEMO_MODE',
-        payload: {
-          id: 'demo-user',
-          name: 'Demo User',
-          email: 'demo@medai.com',
-          role: 'PATIENT',
-          isDemo: true
-        }
+        type: 'LOGIN_SUCCESS',
+        payload: { user, accessToken, refreshToken },
       });
-      navigate('/');
+
+      localStorage.setItem('token', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+
+      return { success: true };
+    } catch (error) {
+      console.error('Registration failed:', error);
+      dispatch({ type: 'SET_LOADING', payload: false });
+      return { success: false, error: error.response?.data?.message || 'Registration failed' };
     }
   };
 
   const logout = () => {
+    dispatch({ type: 'LOGOUT' });
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
-    dispatch({ type: 'LOGOUT' });
     navigate('/');
-    toast.success('Logged out successfully');
   };
 
   const updateUser = (userData) => {
-    dispatch({
-      type: 'UPDATE_USER',
-      payload: userData,
-    });
+    dispatch({ type: 'UPDATE_USER', payload: userData });
   };
 
   const verifyEmail = async (token) => {
     try {
-      await api.post('/api/auth/verify-email', null, {
-        params: { token },
-      });
-      toast.success('Email verified successfully!');
-      navigate('/login');
+      const response = await api.post('/api/auth/verify-email', { token });
+      return { success: true, data: response.data };
     } catch (error) {
-      toast.error('Email verification service not available.');
-      navigate('/');
+      return { success: false, error: error.response?.data?.message || 'Email verification failed' };
     }
   };
 
   const forgotPassword = async (email) => {
     try {
       await api.post('/api/auth/forgot-password', { email });
-      toast.success('Password reset email sent!');
+      return { success: true };
     } catch (error) {
-      toast.error('Password reset service not available.');
+      return { success: false, error: error.response?.data?.message || 'Password reset failed' };
     }
   };
 
   const changePassword = async (currentPassword, newPassword) => {
     try {
-      await api.post('/api/auth/change-password', {
+      const response = await api.post('/api/auth/change-password', {
         currentPassword,
         newPassword,
       });
-      toast.success('Password changed successfully!');
+      return { success: true, data: response.data };
     } catch (error) {
-      toast.error('Password change service not available.');
+      return { success: false, error: error.response?.data?.message || 'Password change failed' };
     }
   };
 
   const value = {
-    ...state,
+    user: state.user,
+    token: state.token,
+    isAuthenticated: state.isAuthenticated,
+    loading: state.loading,
     login,
     register,
     logout,
@@ -300,11 +260,7 @@ export const AuthProvider = ({ children }) => {
     changePassword,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
