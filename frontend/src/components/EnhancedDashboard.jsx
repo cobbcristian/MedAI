@@ -103,8 +103,7 @@ import {
   BatteryCharging1Bar,
   BatteryCharging0Bar,
   BatterySaver,
-  BatteryStd,
-  BatteryUnknown
+  BatteryStd
 } from '@mui/icons-material';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 
