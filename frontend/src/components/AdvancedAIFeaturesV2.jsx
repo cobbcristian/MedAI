@@ -149,7 +149,6 @@ import {
   Fingerprint,
   Face,
   Visibility,
-  VisibilityOff,
   Notifications,
   NotificationsOff,
   NotificationsActive,
