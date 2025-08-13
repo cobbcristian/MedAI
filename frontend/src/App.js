@@ -51,6 +51,8 @@ import LoginPage from './components/auth/LoginPage';
 import ProviderDashboard from './components/dashboard/ProviderDashboard';
 import ScanAnalysis from './components/advanced-ai/ScanAnalysis';
 import PatientReporting from './components/patient-reporting/PatientReporting';
+import EnhancedDashboard from './components/EnhancedDashboard';
+import AdvancedAIFeaturesV2 from './components/AdvancedAIFeaturesV2';
 
 const theme = createTheme({
   palette: {
@@ -93,7 +95,9 @@ const menuItems = [
   { text: 'Security & Privacy', icon: <Security />, path: '/security-privacy' },
   { text: 'Advanced AI', icon: <Science />, path: '/advanced-ai' },
   { text: 'Analytics', icon: <Analytics />, path: '/analytics' },
-  { text: 'Crisis Dashboard', icon: <Warning />, path: '/crisis-dashboard' }
+  { text: 'Crisis Dashboard', icon: <Warning />, path: '/crisis-dashboard' },
+  { text: 'Enhanced Dashboard', icon: <DashboardIcon />, path: '/enhanced-dashboard' },
+  { text: 'AI Features V2', icon: <Science />, path: '/ai-features-v2' }
 ];
 
 // Layout Component
@@ -484,6 +488,8 @@ function App() {
             <Route path="/advanced-ai" element={<AdvancedAIFeaturesPage />} />
             <Route path="/analytics" element={<AnalyticsDashboardPage />} />
             <Route path="/crisis-dashboard" element={<CrisisDashboardPage />} />
+            <Route path="/enhanced-dashboard" element={<EnhancedDashboard />} />
+            <Route path="/ai-features-v2" element={<AdvancedAIFeaturesV2 />} />
           </Routes>
         </Layout>
       </Router>
