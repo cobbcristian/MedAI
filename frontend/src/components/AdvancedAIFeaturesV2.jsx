@@ -112,7 +112,6 @@ import {
   BatteryCharging0Bar,
   BatterySaver,
   BatteryStd,
-  BatteryUnknown,
   ExpandMore,
   ExpandLess,
   TrendingUp,
