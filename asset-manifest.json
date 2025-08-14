@@ -1,0 +1,11 @@
+{
+  "files": {
+    "main.css": "/MedAI/static/css/main.687d6c62.css",
+    "main.js": "/MedAI/static/js/main.696a029e.js",
+    "index.html": "/MedAI/index.html"
+  },
+  "entrypoints": [
+    "static/css/main.687d6c62.css",
+    "static/js/main.696a029e.js"
+  ]
+}
