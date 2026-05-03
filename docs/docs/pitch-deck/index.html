@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MedAI — Pitch Deck</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/white.css" />
+  <style>
+    .reveal h1, .reveal h2, .reveal h3 { text-transform: none; font-weight: 700; }
+    .reveal .subtitle { color: #1976d2; font-size: 0.55em; font-weight: 500; }
+    .reveal .small { font-size: 0.65em; color: #444; }
+    .reveal .tagline { color: #1565c0; font-weight: 600; margin-top: 1rem; }
+    .reveal ul { text-align: left; }
+    .reveal .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; text-align: left; font-size: 0.85em; }
+    .reveal .callout { background: #e3f2fd; padding: 1rem 1.25rem; border-radius: 8px; text-align: left; font-size: 0.75em; margin-top: 1rem; }
+    .reveal .footer-note { position: fixed; bottom: 12px; left: 24px; font-size: 0.35em; color: #888; }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+      <section>
+        <h1>MedAI</h1>
+        <p class="tagline">AI-assisted operations for telemedicine &amp; ambulatory care</p>
+        <p class="small">Confidential — [Date] — [Your name / entity]</p>
+      </section>
+
+      <section>
+        <h2>The problem</h2>
+        <ul>
+          <li>Clinicians lose hours to <strong>documentation and inbox work</strong> after visits.</li>
+          <li>Virtual programs stall on <strong>intake, follow-up, and metrics</strong>—not only “more marketing.”</li>
+          <li>Health systems need <strong>guardrailed AI</strong>: assistive, auditable, under clinical governance.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Our thesis</h2>
+        <p><strong>Software should shorten the path to a signed, compliant chart</strong>—without pretending to replace licensed judgment.</p>
+        <p class="callout">Positioning: <strong>documentation &amp; workflow layer</strong> for your medical group / telehealth operator—not autonomous diagnosis or prescribing.</p>
+      </section>
+
+      <section>
+        <h2>What MedAI is</h2>
+        <div class="two-col">
+          <div>
+            <h3>Built</h3>
+            <ul>
+              <li>FastAPI backend + React app</li>
+              <li>Auth, chat, video hooks</li>
+              <li>Doctor Copilot (SOAP / summaries)</li>
+              <li>Lab &amp; imaging upload pipelines</li>
+              <li>Pilot metrics, CRM / outreach tooling</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Explicitly not</h3>
+            <ul>
+              <li>Not a pharmacy or Rx marketplace</li>
+              <li>No “auto-diagnosis” product claims</li>
+              <li>Your counsel defines regulated scope</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Product (today)</h2>
+        <ul>
+          <li><strong>Intake &amp; engagement:</strong> structured flows, secure messaging</li>
+          <li><strong>Documentation assist:</strong> drafts for clinician review &amp; sign-off</li>
+          <li><strong>Imaging &amp; labs:</strong> broad upload formats; analysis under oversight disclaimers</li>
+          <li><strong>Ops &amp; growth:</strong> pilot log, leads, compliant email (e.g. Resend) when configured</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Product demo (video)</h2>
+        <video controls playsinline preload="metadata" style="width:100%;max-height:62vh;border-radius:8px;background:#000">
+          <source src="../../videos/medai-healthcare-platform.mp4" type="video/mp4" />
+          <p class="small">Your browser cannot play MP4 inline. Open the file directly:
+            <a href="../../videos/medai-healthcare-platform.mp4">medai-healthcare-platform.mp4</a></p>
+        </video>
+        <p class="small" style="margin-top:0.75rem">GitHub Pages “/docs folder on main”: deck at <code>/docs/pitch-deck/</code>; video at <code>/videos/</code>.</p>
+      </section>
+
+      <section>
+        <h2>Who it’s for</h2>
+        <ul>
+          <li><strong>B2B:</strong> telehealth MSOs, clinic groups, digital health operators</li>
+          <li><strong>Use cases:</strong> metabolic &amp; chronic programs, employer / screening adjacencies, multi-state virtual care</li>
+          <li><strong>Strategic decks:</strong> pharmacy playbook, consumer-brand roadmap, Prenuvo/Function-style screening narrative (education only)</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Why now</h2>
+        <ul>
+          <li>Payers and operators are standardizing on <strong>AI for admin burden</strong>—with scrutiny on safety and marketing.</li>
+          <li>Winners pair <strong>workflow metrics</strong> (time-to-note, edit rate) with <strong>clinical governance</strong>.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Business model <span class="subtitle">(hypothesis — fill your numbers)</span></h2>
+        <ul>
+          <li><strong>SaaS per seat / per location</strong> + implementation</li>
+          <li>Optional: pilot → annual contract after measured outcomes</li>
+          <li><strong>[YOU:]</strong> Target ACV, pilot pricing, professional services</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Traction <span class="subtitle">(replace with facts)</span></h2>
+        <ul>
+          <li><strong>[YOU:]</strong> Pilots LOIs / clinics in conversation</li>
+          <li><strong>[YOU:]</strong> MRR / design partners</li>
+          <li><strong>[YOU:]</strong> Key metric: e.g. median minutes to signed note (baseline vs pilot)</li>
+        </ul>
+        <p class="callout">If pre-revenue: say so plainly and lead with <strong>pilot design + measurement plan</strong>.</p>
+      </section>
+
+      <section>
+        <h2>Competitive angle</h2>
+        <ul>
+          <li>Not competing with full EHR replacers on day one—<strong>integrate at the edges</strong> (intake, drafts, metrics).</li>
+          <li>Differentiated by <strong>ops + compliance-conscious UX</strong> and <strong>measurable pilot discipline</strong>.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Roadmap <span class="subtitle">(12–18 months)</span></h2>
+        <ol>
+          <li>Harden security reviews, BAA-ready deployment patterns</li>
+          <li>Deeper EHR-friendly exports; role-based workflows</li>
+          <li>Partner integrations (imaging centers, lab networks) as contracts allow</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Team <span class="subtitle">(you fill)</span></h2>
+        <ul>
+          <li><strong>[YOU:]</strong> Founder / clinical advisor / eng</li>
+          <li><strong>[YOU:]</strong> Hiring plan tied to pilot revenue or seed</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>The ask</h2>
+        <ul>
+          <li><strong>[YOU — pick one:]</strong> Strategic pilot · intro to clinical ops · seed round $[X] on [instrument]</li>
+          <li><strong>Use of funds [if raising]:</strong> [e.g. security, first hires, pilot success]</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Risk &amp; mitigation</h2>
+        <ul>
+          <li><strong>Regulatory / marketing claims</strong> → counsel-reviewed language; no disease-cure positioning</li>
+          <li><strong>Clinical trust</strong> → edit-rate metrics, opt-in workflows, human sign-off</li>
+          <li><strong>Data</strong> → encryption, audit logs, least-privilege access</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Why GuideWell / health plans</h2>
+        <p>Aligns with <strong>connected, people-centered care</strong> and <strong>responsible innovation</strong>: reduce administrative drag while keeping clinicians accountable for decisions.</p>
+        <p class="small">Customize with one sentence on Florida / regional fit if applicable.</p>
+      </section>
+
+      <section>
+        <h2>Appendix</h2>
+        <ul>
+          <li>Public repo: <a href="https://github.com/cobbcristian/MedAI">github.com/cobbcristian/MedAI</a></li>
+          <li>Stack: React, FastAPI, Postgres-ready patterns, OpenAI for assistive features</li>
+        </ul>
+        <p class="callout">This deck is a template. Replace all <strong>[YOU:]</strong> markers before sending to investors or partners.</p>
+      </section>
+
+      <section>
+        <h2>Thank you</h2>
+        <p class="tagline">MedAI — documentation &amp; ops that respect the license on the wall</p>
+        <p><strong>[YOU:]</strong> name@email · calendar link</p>
+      </section>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      slideNumber: 'c/t',
+      transition: 'slide',
+      width: 1280,
+      height: 720,
+    });
+  </script>
+</body>
+</html>
