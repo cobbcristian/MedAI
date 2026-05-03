@@ -460,11 +460,14 @@ const PlaceholderPage = ({ title, description }) => (
   </Container>
 );
 
+const routerBasename =
+  (process.env.PUBLIC_URL && process.env.PUBLIC_URL.replace(/\/$/, '')) || undefined;
+
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router>
+      <Router basename={routerBasename}>
         <Layout>
           <Routes>
             <Route path="/" element={<LoginPage />} />

@@ -95,14 +95,20 @@ Confidential · [Date] · [Your name]
 
 ---
 
-## Links
+## Links (GitHub Pages + `gh-pages` from Actions)
+Repo **Settings → Pages** must use **`gh-pages`** branch (root). After the **Deploy to GitHub Pages** workflow runs on **`main`** or **`pitch-deck-only`**, these URLs are valid:
+
+| Asset | URL |
+|-------|-----|
+| **Web pitch deck (Reveal)** | https://cobbcristian.github.io/MedAI/docs/pitch-deck/index.html |
+| **PowerPoint** (short path) | https://cobbcristian.github.io/MedAI/pitch-deck/ai_telemedicine_slide_deck.pptx |
+| **PowerPoint** (same file) | https://cobbcristian.github.io/MedAI/docs/pitch-deck/ai_telemedicine_slide_deck.pptx |
+| **Demo video** | https://cobbcristian.github.io/MedAI/videos/medai-healthcare-platform.mp4 |
+| **React app** | https://cobbcristian.github.io/MedAI/ |
+
 - **Source / product hub:** https://github.com/cobbcristian/MedAI  
-- **App (GitHub Pages):** https://cobbcristian.github.io/MedAI/  
-- **Pitch deck (same site — must be under `frontend/public` so it deploys):**  
-  https://cobbcristian.github.io/MedAI/docs/pitch-deck/index.html  
-  _Redeploy after pulling latest; if 404, run `npm run build` in `frontend` and push so Actions publishes `build/`._  
-- **Demo video (bundled for Pages; ~21 MB):** https://cobbcristian.github.io/MedAI/videos/medai-healthcare-platform.mp4  
-- **Local deck:** `docs/pitch-deck/index.html` or `frontend/public/docs/pitch-deck/index.html` → open in Chrome → Print → Save as PDF  
+- **If everything 404:** Pages is not using `gh-pages`, or Actions did not run / failed — fix **Settings → Pages** and check the **Actions** tab.  
+- **Local deck:** `frontend/public/docs/pitch-deck/index.html` → open in Chrome → Print → Save as PDF  
 
 ---
 
